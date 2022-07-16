@@ -208,6 +208,7 @@ pub use stars::AnyStars;
 mod curve;
 mod limited_queue;
 mod mods;
+mod jni;
 
 pub use catch::{CatchPP, CatchStars};
 pub use mania::{ManiaPP, ManiaStars};

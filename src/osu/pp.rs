@@ -92,11 +92,29 @@ impl<'map> OsuPP<'map> {
         self
     }
 
+    ///
+    #[inline]
+    pub fn attributes_borrow(&mut self, attributes: impl OsuAttributeProvider) -> &Self {
+        if let Some(attributes) = attributes.attributes() {
+            self.attributes.replace(attributes);
+        }
+
+        self
+    }
+
     /// Specify mods through their bit values.
     ///
     /// See [https://github.com/ppy/osu-api/wiki#mods](https://github.com/ppy/osu-api/wiki#mods)
     #[inline]
     pub fn mods(mut self, mods: u32) -> Self {
+        self.mods = mods;
+
+        self
+    }
+
+    ///
+    #[inline]
+    pub fn mods_borrow(&mut self, mods: u32) -> &Self {
         self.mods = mods;
 
         self
@@ -110,9 +128,25 @@ impl<'map> OsuPP<'map> {
         self
     }
 
+    ///
+    #[inline]
+    pub fn combo_borrow(&mut self, combo: usize) -> &Self {
+        self.combo.replace(combo);
+
+        self
+    }
+
     /// Specify the amount of 300s of a play.
     #[inline]
     pub fn n300(mut self, n300: usize) -> Self {
+        self.n300.replace(n300);
+
+        self
+    }
+
+    ///
+    #[inline]
+    pub fn n300_borrow(&mut self, n300: usize) -> &Self {
         self.n300.replace(n300);
 
         self
@@ -126,9 +160,25 @@ impl<'map> OsuPP<'map> {
         self
     }
 
+    ///
+    #[inline]
+    pub fn n100_borrow(&mut self, n100: usize) -> &Self {
+        self.n100.replace(n100);
+
+        self
+    }
+
     /// Specify the amount of 50s of a play.
     #[inline]
     pub fn n50(mut self, n50: usize) -> Self {
+        self.n50.replace(n50);
+
+        self
+    }
+
+    ///
+    #[inline]
+    pub fn n50_borrow(&mut self, n50: usize) -> &Self {
         self.n50.replace(n50);
 
         self
@@ -142,6 +192,14 @@ impl<'map> OsuPP<'map> {
         self
     }
 
+    ///
+    #[inline]
+    pub fn misses_borrow(&mut self, n_misses: usize) -> &Self {
+        self.n_misses = n_misses;
+
+        self
+    }
+
     /// Amount of passed objects for partial plays, e.g. a fail.
     ///
     /// If you want to calculate the performance after every few objects, instead of
@@ -149,6 +207,14 @@ impl<'map> OsuPP<'map> {
     /// [`OsuGradualPerformanceAttributes`](crate::osu::OsuGradualPerformanceAttributes).
     #[inline]
     pub fn passed_objects(mut self, passed_objects: usize) -> Self {
+        self.passed_objects.replace(passed_objects);
+
+        self
+    }
+
+    ///
+    #[inline]
+    pub fn passed_objects_borrow(&mut self, passed_objects: usize) -> &Self {
         self.passed_objects.replace(passed_objects);
 
         self
@@ -189,6 +255,66 @@ impl<'map> OsuPP<'map> {
     /// Be sure to set `misses` beforehand!
     /// In case of a partial play, be also sure to set `passed_objects` beforehand!
     pub fn accuracy(mut self, acc: f64) -> Self {
+        let n_objects = self.passed_objects.unwrap_or(self.map.hit_objects.len());
+
+        let mut acc = acc / 100.0;
+
+        if self.n100.or(self.n50).is_some() {
+            let mut n100 = self.n100.unwrap_or(0);
+            let mut n50 = self.n50.unwrap_or(0);
+
+            let placed_points = 2 * n100 + n50 + self.n_misses;
+            let missing_objects = n_objects - n100 - n50 - self.n_misses;
+            let missing_points =
+                ((6.0 * acc * n_objects as f64).round() as usize).saturating_sub(placed_points);
+
+            let mut n300 = missing_objects.min(missing_points / 6);
+            n50 += missing_objects - n300;
+
+            if let Some(orig_n50) = self.n50.filter(|_| self.n100.is_none()) {
+                // Only n50s were changed, try to load some off again onto n100s
+                let difference = n50 - orig_n50;
+                let n = n300.min(difference / 4);
+
+                n300 -= n;
+                n100 += 5 * n;
+                n50 -= 4 * n;
+            }
+
+            self.n300 = Some(n300);
+            self.n100 = Some(n100);
+            self.n50 = Some(n50);
+
+            acc = (6 * n300 + 2 * n100 + n50) as f64 / (6 * n_objects) as f64;
+        } else {
+            let misses = self.n_misses.min(n_objects);
+            let target_total = (acc * n_objects as f64 * 6.0).round() as usize;
+            let delta = target_total - (n_objects - misses);
+
+            let mut n300 = delta / 5;
+            let mut n100 = (delta % 5).min(n_objects - n300 - misses);
+            let mut n50 = n_objects - n300 - n100 - misses;
+
+            // Sacrifice n300s to transform n50s into n100s
+            let n = n300.min(n50 / 4);
+            n300 -= n;
+            n100 += 5 * n;
+            n50 -= 4 * n;
+
+            self.n300 = Some(n300);
+            self.n100 = Some(n100);
+            self.n50 = Some(n50);
+
+            acc = (6 * n300 + 2 * n100 + n50) as f64 / (6 * n_objects) as f64;
+        }
+
+        self.acc = Some(acc);
+
+        self
+    }
+
+    ///
+    pub fn accuracy_borrow(&mut self, acc: f64) -> &Self {
         let n_objects = self.passed_objects.unwrap_or(self.map.hit_objects.len());
 
         let mut acc = acc / 100.0;
