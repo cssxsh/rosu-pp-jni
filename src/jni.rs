@@ -8,7 +8,7 @@ use jni::sys::{jbyteArray, jdouble, jint, jlong, jstring};
 use once_cell::sync::Lazy;
 use bytes::BufMut;
 use crate::{Beatmap, OsuPP};
-use crate::osu::OsuAttributeProvider;
+use crate::osu::{OsuAttributeProvider, OsuPerformanceAttributes};
 
 static ALLOCATED_MAP: Lazy<Mutex<HashMap<String, &'static Beatmap>>> = Lazy::new(|| { Mutex::new(HashMap::new()) });
 
@@ -38,6 +38,16 @@ pub extern "system" fn Java_me_stageguard_obms_osu_algorithm_ppnative_PPCalculat
     _env: JNIEnv<'_>, _class: JClass<'_>, calc_ptr: &'static mut OsuPP<'static>, mods: jint
 ) -> jlong {
     let calc = calc_ptr.mods_borrow(mods as u32);
+    calc as *const _ as i64
+}
+
+#[no_mangle]
+pub extern "system" fn Java_me_stageguard_obms_osu_algorithm_ppnative_PPCalculatorNativeKt_nAttributes(
+    _env: JNIEnv<'_>, _class: JClass<'_>,
+    calc_ptr: &'static mut OsuPP<'static>, attr_ptr: &'static mut OsuPerformanceAttributes
+) -> jlong {
+    let attr = unsafe { Box::from_raw(attr_ptr) };
+    let calc = calc_ptr.attributes_borrow(attr.attributes().unwrap());
     calc as *const _ as i64
 }
 
@@ -129,4 +139,18 @@ pub extern "system" fn Java_me_stageguard_obms_osu_algorithm_ppnative_PPCalculat
     buffer.put_i32(cloned_attributes.n_spinners as i32);
 
     env.byte_array_from_slice(buffer.as_slice()).unwrap()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_me_stageguard_obms_osu_algorithm_ppnative_PPCalculatorNativeKt_nReleaseAttribute(
+    _env: JNIEnv<'_>, _class: JClass<'_>, attr_ptr: &'static mut OsuPerformanceAttributes
+) {
+    unsafe { Box::from_raw(attr_ptr) };
+}
+
+#[no_mangle]
+pub extern "system" fn Java_me_stageguard_obms_osu_algorithm_ppnative_PPCalculatorNativeKt_nReleaseCalculator(
+    _env: JNIEnv<'_>, _class: JClass<'_>, calc_ptr: &'static mut OsuPP<'static>
+) {
+    unsafe { Box::from_raw(calc_ptr) };
 }
