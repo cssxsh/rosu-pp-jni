@@ -243,7 +243,7 @@ pub trait BeatmapExt {
     /// Return an iterator that gives you the [`DifficultyAttributes`] after each hit object.
     ///
     /// Suitable to efficiently get the map's star rating after multiple different locations.
-    fn gradual_difficulty(&self, mods: impl Mods) -> GradualDifficultyAttributes<'_>;
+    fn gradual_difficulty(&self, mods: u32) -> GradualDifficultyAttributes<'_>;
 
     /// Return a struct that gives you the [`PerformanceAttributes`] after every (few) hit object(s).
     ///
@@ -295,7 +295,7 @@ impl BeatmapExt for Beatmap {
     }
 
     #[inline]
-    fn gradual_difficulty(&self, mods: impl Mods) -> GradualDifficultyAttributes<'_> {
+    fn gradual_difficulty(&self, mods: u32) -> GradualDifficultyAttributes<'_> {
         GradualDifficultyAttributes::new(self, mods)
     }
 
@@ -333,6 +333,7 @@ impl Strains {
 
     /// Returns the number of strain peaks per skill.
     #[inline]
+    #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         match self {
             Strains::Catch(strains) => strains.len(),
@@ -508,17 +509,6 @@ impl From<taiko::TaikoPerformanceAttributes> for PerformanceAttributes {
     #[inline]
     fn from(attributes: taiko::TaikoPerformanceAttributes) -> Self {
         Self::Taiko(attributes)
-    }
-}
-
-#[inline]
-fn difficulty_range(val: f64, max: f64, avg: f64, min: f64) -> f64 {
-    if val > 5.0 {
-        avg + (max - avg) * (val - 5.0) / 5.0
-    } else if val < 5.0 {
-        avg - (avg - min) * (5.0 - val) / 5.0
-    } else {
-        avg
     }
 }
 
