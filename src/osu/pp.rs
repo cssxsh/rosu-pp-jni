@@ -276,7 +276,7 @@ impl<'map> OsuPP<'map> {
 
     /// This will be used to generate matching hitresults.
     #[inline]
-    pub fn accuracy_borrow(&mut self, acc: f64) -> Self {
+    pub fn accuracy_borrow(&mut self, acc: f64) -> &Self {
         self.acc = Some(acc / 100.0);
 
         self
