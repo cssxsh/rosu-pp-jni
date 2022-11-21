@@ -138,7 +138,7 @@ impl<R> FileReader<R> {
             .and_then(|idx| {
                 self.buf[idx..]
                     .starts_with(b"osu file format v")
-                    .then(|| idx + 17)
+                    .then_some(idx + 17)
             })
             .map(|idx| {
                 let mut n = 0;
@@ -235,7 +235,7 @@ impl<R> FileReader<R> {
             .iter()
             .enumerate()
             .rev()
-            .find_map(|(i, byte)| (!matches!(byte, b' ' | b'\t')).then(|| i + 1))
+            .find_map(|(i, byte)| (!matches!(byte, b' ' | b'\t')).then_some(i + 1))
             .unwrap_or(0);
 
         self.buf.truncate(len);
@@ -245,7 +245,7 @@ impl<R> FileReader<R> {
     /// the first element and all the 0's, turning it into `[a, b, c, ...]`.
     fn decode_utf16(&mut self) {
         // remove the 0's
-        let limit = self.buf.len() / 2 + 1 + (self.buf.len() % 2);
+        let limit = self.buf.len() / 2 + 1;
 
         for i in 2..limit {
             self.buf.swap(i, i * 2 - 1);

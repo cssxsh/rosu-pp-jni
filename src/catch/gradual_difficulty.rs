@@ -1,10 +1,7 @@
 use std::{iter, slice::Iter};
 
 use crate::{
-    catch::{
-        difficulty_object::DifficultyObject, slider_state::SliderState, SECTION_LENGTH,
-        STAR_SCALING_FACTOR,
-    },
+    catch::{difficulty_object::DifficultyObject, SECTION_LENGTH, STAR_SCALING_FACTOR},
     curve::CurveBuffers,
     parse::{HitObject, Pos2},
     Beatmap, Mods,
@@ -179,7 +176,6 @@ impl<'map> CatchObjectIter<'map> {
             last_pos: None,
             last_time: 0.0,
             map,
-            slider_state: SliderState::new(map),
             ticks: Vec::new(),
             with_hr: mods.hr(),
         };
@@ -211,31 +207,5 @@ impl Iterator for CatchObjectIter<'_> {
         }
 
         None
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn empty_map() {
-        let map = Beatmap::default();
-        let mut attributes = CatchGradualDifficultyAttributes::new(&map, 0);
-        assert!(attributes.next().is_none());
-    }
-
-    #[cfg(not(any(feature = "async_tokio", feature = "async_std")))]
-    #[test]
-    fn iter_end_eq_regular() {
-        let map = Beatmap::from_path("./maps/2118524.osu").expect("failed to parse map");
-        let mods = 64;
-        let regular = crate::CatchStars::new(&map).mods(mods).calculate();
-
-        let iter_end = CatchGradualDifficultyAttributes::new(&map, mods)
-            .last()
-            .expect("empty iter");
-
-        assert_eq!(regular, iter_end);
     }
 }

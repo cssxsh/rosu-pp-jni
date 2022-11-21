@@ -15,25 +15,24 @@
 //! };
 //! # */ let map = Beatmap::default();
 //!
-//! // If `BeatmapExt` is included, you can make use of
-//! // some methods on `Beatmap` to make your life simpler.
+//! // If `BeatmapExt` is included, you can make use of some methods
+//! // on `Beatmap` to make your life simpler like `BeatmapExt::pp`.
 //! let result = map.pp()
 //!     .mods(24) // HDHR
 //!     .combo(1234)
-//!     .misses(2)
-//!     .accuracy(99.2) // should be called last
+//!     .accuracy(99.2)
+//!     .n_misses(2)
 //!     .calculate();
 //!
 //! println!("PP: {}", result.pp());
 //!
-//! // If you intend to reuse the current map-mod combination,
-//! // make use of the previous result!
+//! // If you want to reuse the current map-mod combination, make use of the previous result!
 //! // If attributes are given, then stars & co don't have to be recalculated.
 //! let next_result = map.pp()
 //!     .mods(24) // HDHR
 //!     .attributes(result) // recycle
 //!     .combo(543)
-//!     .misses(5)
+//!     .n_misses(5)
 //!     .n50(3)
 //!     .accuracy(96.5)
 //!     .calculate();
@@ -68,7 +67,7 @@
 //! let result = map.pp()
 //!     .mods(24) // HDHR
 //!     .combo(1234)
-//!     .misses(2)
+//!     .n_misses(2)
 //!     .accuracy(99.2)
 //!     .calculate();
 //!
@@ -88,10 +87,13 @@
 //!     taiko::TaikoScoreState,
 //! };
 //!
+//! # /*
 //! let map = match Beatmap::from_path("/path/to/file.osu") {
 //!     Ok(map) => map,
 //!     Err(why) => panic!("Error while parsing map: {}", why),
 //! };
+//! # */
+//! # let map = Beatmap::default();
 //!
 //! let mods = 8 + 64; // HDDT
 //!
@@ -114,12 +116,12 @@
 //! // The default score state is kinda chunky because it considers all modes.
 //! let state = ScoreState {
 //!     max_combo: 1,
-//!     n_katu: 0, // only relevant for ctb
+//!     n_geki: 0, // only relevant for mania
+//!     n_katu: 0, // only relevant for mania and ctb
 //!     n300: 1,
 //!     n100: 0,
 //!     n50: 0,
-//!     misses: 0,
-//!     score: 300, // only relevant for mania
+//!     n_misses: 0,
 //! };
 //!
 //! // Process the score state after the first object
@@ -145,7 +147,7 @@
 //!     max_combo: 11,
 //!     n300: 9,
 //!     n100: 1,
-//!     misses: 1,
+//!     n_misses: 1,
 //! };
 //!
 //! // Process the next 10 objects in one go
@@ -200,15 +202,15 @@ mod gradual;
 pub use gradual::{GradualDifficultyAttributes, GradualPerformanceAttributes, ScoreState};
 
 mod pp;
-pub use pp::{AnyPP, AttributeProvider};
+pub use pp::{AnyPP, AttributeProvider, HitResultPriority};
 
 mod stars;
 pub use stars::AnyStars;
 
 mod curve;
-mod limited_queue;
 mod mods;
 mod jni;
+mod util;
 
 pub use catch::{CatchPP, CatchStars};
 pub use mania::{ManiaPP, ManiaStars};
@@ -217,8 +219,9 @@ pub use taiko::{TaikoPP, TaikoStars};
 
 pub use mods::Mods;
 pub use parse::{ParseError, ParseResult};
+pub use util::SortedVec;
 
-/// Provides some additional methods on [`Beatmap`](crate::Beatmap).
+/// Provides some additional methods on [`Beatmap`].
 pub trait BeatmapExt {
     /// Calculate the stars and other attributes of a beatmap which are required for pp calculation.
     fn stars(&self) -> AnyStars<'_>;
@@ -257,9 +260,9 @@ impl BeatmapExt for Beatmap {
     fn stars(&self) -> AnyStars<'_> {
         match self.mode {
             GameMode::Osu => AnyStars::Osu(OsuStars::new(self)),
-            GameMode::Mania => AnyStars::Mania(ManiaStars::new(self)),
             GameMode::Taiko => AnyStars::Taiko(TaikoStars::new(self)),
             GameMode::Catch => AnyStars::Catch(CatchStars::new(self)),
+            GameMode::Mania => AnyStars::Mania(ManiaStars::new(self)),
         }
     }
 
@@ -267,14 +270,14 @@ impl BeatmapExt for Beatmap {
     fn max_pp(&self, mods: u32) -> PerformanceAttributes {
         match self.mode {
             GameMode::Osu => PerformanceAttributes::Osu(OsuPP::new(self).mods(mods).calculate()),
-            GameMode::Mania => {
-                PerformanceAttributes::Mania(ManiaPP::new(self).mods(mods).calculate())
-            }
             GameMode::Taiko => {
                 PerformanceAttributes::Taiko(TaikoPP::new(self).mods(mods).calculate())
             }
             GameMode::Catch => {
                 PerformanceAttributes::Catch(CatchPP::new(self).mods(mods).calculate())
+            }
+            GameMode::Mania => {
+                PerformanceAttributes::Mania(ManiaPP::new(self).mods(mods).calculate())
             }
         }
     }
@@ -288,9 +291,9 @@ impl BeatmapExt for Beatmap {
     fn strains(&self, mods: u32) -> Strains {
         match self.mode {
             GameMode::Osu => Strains::Osu(OsuStars::new(self).mods(mods).strains()),
-            GameMode::Mania => Strains::Mania(ManiaStars::new(self).mods(mods).strains()),
             GameMode::Taiko => Strains::Taiko(TaikoStars::new(self).mods(mods).strains()),
             GameMode::Catch => Strains::Catch(CatchStars::new(self).mods(mods).strains()),
+            GameMode::Mania => Strains::Mania(ManiaStars::new(self).mods(mods).strains()),
         }
     }
 
@@ -309,14 +312,14 @@ impl BeatmapExt for Beatmap {
 /// Suitable to plot the difficulty of a map over time.
 #[derive(Clone, Debug)]
 pub enum Strains {
-    /// osu!catch strain values.
-    Catch(catch::CatchStrains),
-    /// osu!mania strain values.
-    Mania(mania::ManiaStrains),
     /// osu!standard strain values.
     Osu(osu::OsuStrains),
     /// osu!taiko strain values.
     Taiko(taiko::TaikoStrains),
+    /// osu!catch strain values.
+    Catch(catch::CatchStrains),
+    /// osu!mania strain values.
+    Mania(mania::ManiaStrains),
 }
 
 impl Strains {
@@ -324,10 +327,10 @@ impl Strains {
     #[inline]
     pub fn section_len(&self) -> f64 {
         match self {
-            Strains::Catch(strains) => strains.section_len,
-            Strains::Mania(strains) => strains.section_len,
             Strains::Osu(strains) => strains.section_len,
             Strains::Taiko(strains) => strains.section_len,
+            Strains::Catch(strains) => strains.section_len,
+            Strains::Mania(strains) => strains.section_len,
         }
     }
 
@@ -336,10 +339,10 @@ impl Strains {
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         match self {
-            Strains::Catch(strains) => strains.len(),
-            Strains::Mania(strains) => strains.len(),
             Strains::Osu(strains) => strains.len(),
             Strains::Taiko(strains) => strains.len(),
+            Strains::Catch(strains) => strains.len(),
+            Strains::Mania(strains) => strains.len(),
         }
     }
 }
@@ -347,14 +350,14 @@ impl Strains {
 /// The result of a difficulty calculation based on the mode.
 #[derive(Clone, Debug)]
 pub enum DifficultyAttributes {
-    /// osu!catch difficulty calculation result.
-    Catch(catch::CatchDifficultyAttributes),
-    /// osu!mania difficulty calculation result.
-    Mania(mania::ManiaDifficultyAttributes),
     /// osu!standard difficulty calculation result.
     Osu(osu::OsuDifficultyAttributes),
     /// osu!taiko difficulty calculation result.
     Taiko(taiko::TaikoDifficultyAttributes),
+    /// osu!catch difficulty calculation result.
+    Catch(catch::CatchDifficultyAttributes),
+    /// osu!mania difficulty calculation result.
+    Mania(mania::ManiaDifficultyAttributes),
 }
 
 impl DifficultyAttributes {
@@ -362,38 +365,22 @@ impl DifficultyAttributes {
     #[inline]
     pub fn stars(&self) -> f64 {
         match self {
-            Self::Catch(attributes) => attributes.stars,
-            Self::Mania(attributes) => attributes.stars,
-            Self::Osu(attributes) => attributes.stars,
-            Self::Taiko(attributes) => attributes.stars,
+            Self::Osu(attrs) => attrs.stars,
+            Self::Taiko(attrs) => attrs.stars,
+            Self::Catch(attrs) => attrs.stars,
+            Self::Mania(attrs) => attrs.stars,
         }
     }
 
     /// The maximum combo of the map.
-    ///
-    /// This will only be `None` for attributes of osu!mania maps.
     #[inline]
-    pub fn max_combo(&self) -> Option<usize> {
+    pub fn max_combo(&self) -> usize {
         match self {
-            Self::Catch(attributes) => Some(attributes.max_combo()),
-            Self::Mania(_) => None,
-            Self::Osu(attributes) => Some(attributes.max_combo),
-            Self::Taiko(attributes) => Some(attributes.max_combo),
+            Self::Osu(attrs) => attrs.max_combo,
+            Self::Taiko(attrs) => attrs.max_combo,
+            Self::Catch(attrs) => attrs.max_combo(),
+            Self::Mania(attrs) => attrs.max_combo,
         }
-    }
-}
-
-impl From<catch::CatchDifficultyAttributes> for DifficultyAttributes {
-    #[inline]
-    fn from(attributes: catch::CatchDifficultyAttributes) -> Self {
-        Self::Catch(attributes)
-    }
-}
-
-impl From<mania::ManiaDifficultyAttributes> for DifficultyAttributes {
-    #[inline]
-    fn from(attributes: mania::ManiaDifficultyAttributes) -> Self {
-        Self::Mania(attributes)
     }
 }
 
@@ -411,17 +398,31 @@ impl From<taiko::TaikoDifficultyAttributes> for DifficultyAttributes {
     }
 }
 
+impl From<catch::CatchDifficultyAttributes> for DifficultyAttributes {
+    #[inline]
+    fn from(attributes: catch::CatchDifficultyAttributes) -> Self {
+        Self::Catch(attributes)
+    }
+}
+
+impl From<mania::ManiaDifficultyAttributes> for DifficultyAttributes {
+    #[inline]
+    fn from(attributes: mania::ManiaDifficultyAttributes) -> Self {
+        Self::Mania(attributes)
+    }
+}
+
 /// The result of a performance calculation based on the mode.
 #[derive(Clone, Debug)]
 pub enum PerformanceAttributes {
-    /// osu!catch performance calculation result.
-    Catch(catch::CatchPerformanceAttributes),
-    /// osu!mania performance calculation result.
-    Mania(mania::ManiaPerformanceAttributes),
     /// osu!standard performance calculation result.
     Osu(osu::OsuPerformanceAttributes),
     /// osu!taiko performance calculation result.
     Taiko(taiko::TaikoPerformanceAttributes),
+    /// osu!catch performance calculation result.
+    Catch(catch::CatchPerformanceAttributes),
+    /// osu!mania performance calculation result.
+    Mania(mania::ManiaPerformanceAttributes),
 }
 
 impl PerformanceAttributes {
@@ -429,10 +430,10 @@ impl PerformanceAttributes {
     #[inline]
     pub fn pp(&self) -> f64 {
         match self {
-            Self::Catch(attributes) => attributes.pp,
-            Self::Mania(attributes) => attributes.pp,
-            Self::Osu(attributes) => attributes.pp,
-            Self::Taiko(attributes) => attributes.pp,
+            Self::Osu(attrs) => attrs.pp,
+            Self::Taiko(attrs) => attrs.pp,
+            Self::Catch(attrs) => attrs.pp,
+            Self::Mania(attrs) => attrs.pp,
         }
     }
 
@@ -440,10 +441,10 @@ impl PerformanceAttributes {
     #[inline]
     pub fn stars(&self) -> f64 {
         match self {
-            Self::Catch(attributes) => attributes.stars(),
-            Self::Mania(attributes) => attributes.stars(),
-            Self::Osu(attributes) => attributes.stars(),
-            Self::Taiko(attributes) => attributes.stars(),
+            Self::Osu(attrs) => attrs.stars(),
+            Self::Taiko(attrs) => attrs.stars(),
+            Self::Catch(attrs) => attrs.stars(),
+            Self::Mania(attrs) => attrs.stars(),
         }
     }
 
@@ -451,23 +452,21 @@ impl PerformanceAttributes {
     #[inline]
     pub fn difficulty_attributes(&self) -> DifficultyAttributes {
         match self {
-            Self::Catch(attributes) => DifficultyAttributes::Catch(attributes.difficulty.clone()),
-            Self::Mania(attributes) => DifficultyAttributes::Mania(attributes.difficulty),
-            Self::Osu(attributes) => DifficultyAttributes::Osu(attributes.difficulty.clone()),
-            Self::Taiko(attributes) => DifficultyAttributes::Taiko(attributes.difficulty),
+            Self::Osu(attrs) => DifficultyAttributes::Osu(attrs.difficulty.clone()),
+            Self::Taiko(attrs) => DifficultyAttributes::Taiko(attrs.difficulty.clone()),
+            Self::Catch(attrs) => DifficultyAttributes::Catch(attrs.difficulty.clone()),
+            Self::Mania(attrs) => DifficultyAttributes::Mania(attrs.difficulty),
         }
     }
 
     #[inline]
     /// The maximum combo of the map.
-    ///
-    /// This will only be `None` for attributes of osu!mania maps.
-    pub fn max_combo(&self) -> Option<usize> {
+    pub fn max_combo(&self) -> usize {
         match self {
-            Self::Catch(f) => Some(f.difficulty.max_combo()),
-            Self::Mania(_) => None,
-            Self::Osu(o) => Some(o.difficulty.max_combo),
-            Self::Taiko(t) => Some(t.difficulty.max_combo),
+            Self::Osu(attrs) => attrs.difficulty.max_combo,
+            Self::Taiko(attrs) => attrs.difficulty.max_combo,
+            Self::Catch(attrs) => attrs.difficulty.max_combo(),
+            Self::Mania(attrs) => attrs.difficulty.max_combo,
         }
     }
 }
@@ -476,25 +475,11 @@ impl From<PerformanceAttributes> for DifficultyAttributes {
     #[inline]
     fn from(attributes: PerformanceAttributes) -> Self {
         match attributes {
-            PerformanceAttributes::Catch(attributes) => Self::Catch(attributes.difficulty),
-            PerformanceAttributes::Mania(attributes) => Self::Mania(attributes.difficulty),
-            PerformanceAttributes::Osu(attributes) => Self::Osu(attributes.difficulty),
-            PerformanceAttributes::Taiko(attributes) => Self::Taiko(attributes.difficulty),
+            PerformanceAttributes::Osu(attrs) => Self::Osu(attrs.difficulty),
+            PerformanceAttributes::Taiko(attrs) => Self::Taiko(attrs.difficulty),
+            PerformanceAttributes::Catch(attrs) => Self::Catch(attrs.difficulty),
+            PerformanceAttributes::Mania(attrs) => Self::Mania(attrs.difficulty),
         }
-    }
-}
-
-impl From<catch::CatchPerformanceAttributes> for PerformanceAttributes {
-    #[inline]
-    fn from(attributes: catch::CatchPerformanceAttributes) -> Self {
-        Self::Catch(attributes)
-    }
-}
-
-impl From<mania::ManiaPerformanceAttributes> for PerformanceAttributes {
-    #[inline]
-    fn from(attributes: mania::ManiaPerformanceAttributes) -> Self {
-        Self::Mania(attributes)
     }
 }
 
@@ -509,6 +494,20 @@ impl From<taiko::TaikoPerformanceAttributes> for PerformanceAttributes {
     #[inline]
     fn from(attributes: taiko::TaikoPerformanceAttributes) -> Self {
         Self::Taiko(attributes)
+    }
+}
+
+impl From<catch::CatchPerformanceAttributes> for PerformanceAttributes {
+    #[inline]
+    fn from(attributes: catch::CatchPerformanceAttributes) -> Self {
+        Self::Catch(attributes)
+    }
+}
+
+impl From<mania::ManiaPerformanceAttributes> for PerformanceAttributes {
+    #[inline]
+    fn from(attributes: mania::ManiaPerformanceAttributes) -> Self {
+        Self::Mania(attributes)
     }
 }
 

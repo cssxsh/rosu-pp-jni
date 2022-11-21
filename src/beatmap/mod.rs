@@ -1,11 +1,11 @@
 use std::{borrow::Cow, cmp::Ordering};
 
-use crate::parse::HitObject;
+use crate::{parse::HitObject, util::SortedVec};
 
 pub use self::{
     attributes::{BeatmapAttributes, BeatmapAttributesBuilder, BeatmapHitWindows},
     breaks::Break,
-    control_points::{ControlPoint, ControlPointIter, DifficultyPoint, TimingPoint},
+    control_points::{DifficultyPoint, EffectPoint, TimingPoint},
     mode::GameMode,
 };
 
@@ -50,10 +50,13 @@ pub struct Beatmap {
     pub sounds: Vec<u8>,
 
     /// Timing points that indicate a new timing section.
-    pub timing_points: Vec<TimingPoint>,
+    pub timing_points: SortedVec<TimingPoint>,
 
     /// Timing point for the current timing section.
-    pub difficulty_points: Vec<DifficultyPoint>,
+    pub difficulty_points: SortedVec<DifficultyPoint>,
+
+    /// Control points for effect sections.
+    pub effect_points: SortedVec<EffectPoint>,
 
     /// The stack leniency that is used to calculate
     /// the stack offset for stacked positions.
@@ -79,12 +82,6 @@ impl Beatmap {
         }
     }
 
-    /// Create an iterator over the map's timing- and difficulty points sorted by timestamp.
-    #[inline]
-    pub fn control_points(&self) -> ControlPointIter<'_> {
-        ControlPointIter::new(self)
-    }
-
     /// Sum up the duration of all breaks (in milliseconds).
     #[inline]
     pub fn total_break_time(&self) -> f64 {
@@ -92,8 +89,6 @@ impl Beatmap {
     }
 
     /// Return the [`TimingPoint`] for the given timestamp.
-    ///
-    /// If `time` is before the first timing point, `None` is returned.
     #[inline]
     pub fn timing_point_at(&self, time: f64) -> TimingPoint {
         let idx_result = self
@@ -118,13 +113,24 @@ impl Beatmap {
             .map(|i| self.difficulty_points[i])
     }
 
+    /// Return the [`EffectPoint`] for the given timestamp.
+    ///
+    /// If `time` is before the first effect point, `None` is returned.
+    #[inline]
+    pub fn effect_point_at(&self, time: f64) -> Option<EffectPoint> {
+        self.effect_points
+            .binary_search_by(|probe| probe.time.partial_cmp(&time).unwrap_or(Ordering::Less))
+            .map_or_else(|i| i.checked_sub(1), Some)
+            .map(|i| self.effect_points[i])
+    }
+
     /// Convert a [`Beatmap`] of some mode into a different mode.
     ///
     /// # Note
     /// - Since hitsounds are irrelevant for difficulty and performance calculations
     /// in osu!mania, the resulting map of a conversion to mania will not contain hitsounds.
     /// - To avoid having to clone the map for osu!catch conversions, the field `Beatmap::mode`
-    /// will not be adjusted in a ctb-converted map.
+    /// will not be adjusted in a osu!catch-converted map.
     #[inline]
     pub fn convert_mode(&self, mode: GameMode) -> Cow<'_, Self> {
         if mode == self.mode {
@@ -155,6 +161,7 @@ impl Beatmap {
             sounds: Vec::with_capacity((with_sounds as usize) * self.sounds.len()),
             timing_points: self.timing_points.clone(),
             difficulty_points: self.difficulty_points.clone(),
+            effect_points: self.effect_points.clone(),
             stack_leniency: self.stack_leniency,
             breaks: self.breaks.clone(),
         }

@@ -14,7 +14,7 @@ pub use slider_parsing::*;
 use reader::FileReader;
 pub(crate) use sort::legacy_sort;
 
-use std::cmp::Ordering;
+use std::{cmp::Ordering, ops::Neg, str::FromStr};
 
 #[cfg(not(any(feature = "async_std", feature = "async_tokio")))]
 use std::{fs::File, io::Read};
@@ -28,11 +28,10 @@ use std::path::Path;
 #[cfg(feature = "async_std")]
 use async_std::{fs::File, io::Read as AsyncRead, path::Path};
 
-use crate::beatmap::{Beatmap, Break, DifficultyPoint, GameMode, TimingPoint};
-
-fn sort_unstable<T: PartialOrd>(slice: &mut [T]) {
-    slice.sort_unstable_by(|p1, p2| p1.partial_cmp(p2).unwrap_or(Ordering::Equal));
-}
+use crate::{
+    beatmap::{Beatmap, Break, DifficultyPoint, EffectPoint, GameMode, TimingPoint},
+    util::{SortedVec, TandemSorter},
+};
 
 trait OptionExt<T> {
     fn next_field(self, field: &'static str) -> Result<T, ParseError>;
@@ -44,17 +43,46 @@ impl<T> OptionExt<T> for Option<T> {
     }
 }
 
-trait FloatExt: Sized {
-    fn validate(self) -> Result<Self, ParseError>;
-}
+trait InRange: Sized + Copy + Neg<Output = Self> + PartialOrd + FromStr {
+    const LIMIT: Self;
 
-impl FloatExt for f64 {
-    fn validate(self) -> Result<Self, ParseError> {
-        self.is_finite()
-            .then(|| self)
-            .ok_or(ParseError::InvalidDecimalNumber)
+    #[inline]
+    fn parse_in_range(s: &str) -> Option<Self> {
+        s.parse().ok().filter(<Self as InRange>::is_in_range)
+    }
+
+    #[inline]
+    fn parse_in_custom_range(s: &str, limit: Self) -> Option<Self> {
+        s.parse()
+            .ok()
+            .filter(|this| <Self as InRange>::is_in_custom_range(this, limit))
+    }
+
+    #[inline]
+    fn is_in_range(&self) -> bool {
+        (-Self::LIMIT..=Self::LIMIT).contains(self)
+    }
+
+    #[inline]
+    fn is_in_custom_range(&self, limit: Self) -> bool {
+        (-limit..=limit).contains(self)
     }
 }
+
+impl InRange for i32 {
+    const LIMIT: Self = i32::MAX;
+}
+
+impl InRange for f32 {
+    const LIMIT: Self = i32::MAX as f32;
+}
+
+impl InRange for f64 {
+    const LIMIT: Self = i32::MAX as f64;
+}
+
+const MAX_COORDINATE_VALUE: i32 = 131_072;
+const KIAI_FLAG: i32 = 1 << 0;
 
 macro_rules! section {
     ($map:ident, $func:ident, $reader:ident, $section:ident) => {{
@@ -110,7 +138,9 @@ macro_rules! parse_general_body {
             }
 
             if key == b"StackLeniency" {
-                stack_leniency = Some(value.parse()?);
+                if let Some(val) = f32::parse_in_range(value) {
+                    stack_leniency = Some(val);
+                }
             }
         }
 
@@ -142,12 +172,36 @@ macro_rules! parse_difficulty_body {
             let (key, value) = $reader.split_colon().ok_or(ParseError::BadLine)?;
 
             match key {
-                b"ApproachRate" => ar = Some(value.parse()?),
-                b"OverallDifficulty" => od = Some(value.parse()?),
-                b"CircleSize" => cs = Some(value.parse()?),
-                b"HPDrainRate" => hp = Some(value.parse()?),
-                b"SliderTickRate" => tick_rate = Some(value.parse()?),
-                b"SliderMultiplier" => sv = Some(value.parse()?),
+                b"ApproachRate" => {
+                    if let Some(val) = f32::parse_in_range(value) {
+                        ar = Some(val);
+                    }
+                }
+                b"OverallDifficulty" => {
+                    if let Some(val) = f32::parse_in_range(value) {
+                        od = Some(val);
+                    }
+                }
+                b"CircleSize" => {
+                    if let Some(val) = f32::parse_in_range(value) {
+                        cs = Some(val);
+                    }
+                }
+                b"HPDrainRate" => {
+                    if let Some(val) = f32::parse_in_range(value) {
+                        hp = Some(val);
+                    }
+                }
+                b"SliderTickRate" => {
+                    if let Some(val) = f64::parse_in_range(value) {
+                        tick_rate = Some(val);
+                    }
+                }
+                b"SliderMultiplier" => {
+                    if let Some(val) = f64::parse_in_range(value) {
+                        sv = Some(val);
+                    }
+                }
                 _ => {}
             }
         }
@@ -158,8 +212,8 @@ macro_rules! parse_difficulty_body {
         $self.cs = cs.unwrap_or(DEFAULT_DIFFICULTY);
         $self.hp = hp.unwrap_or(DEFAULT_DIFFICULTY);
         $self.ar = ar.unwrap_or($self.od);
-        $self.slider_mult = sv.next_field("sv")?;
-        $self.tick_rate = tick_rate.next_field("tick rate")?;
+        $self.slider_mult = sv.unwrap_or(1.0);
+        $self.tick_rate = tick_rate.unwrap_or(1.0);
 
         Ok(empty)
     }};
@@ -185,13 +239,22 @@ macro_rules! parse_events_body {
 
             // We're only interested in breaks
             if let Some(b'2') = split.next().and_then(|value| value.bytes().next()) {
-                let start_time = split.next().next_field("break start")?.parse()?;
-                let end_time = split.next().next_field("break end")?.parse()?;
+                let start_time = split
+                    .next()
+                    .next_field("break start")
+                    .map(f64::parse_in_range)?;
 
-                $self.breaks.push(Break {
-                    start_time,
-                    end_time,
-                });
+                let end_time = split
+                    .next()
+                    .next_field("break end")
+                    .map(f64::parse_in_range)?;
+
+                if let (Some(start_time), Some(end_time)) = (start_time, end_time) {
+                    $self.breaks.push(Break {
+                        start_time,
+                        end_time,
+                    });
+                }
             }
         }
 
@@ -201,13 +264,10 @@ macro_rules! parse_events_body {
 
 macro_rules! parse_timingpoints_body {
     ($self:ident, $reader:ident, $section:ident) => {{
-        let mut unsorted_timings = false;
-        let mut unsorted_difficulties = false;
-
-        let mut prev_diff = 0.0;
-        let mut prev_time = 0.0;
-
         let mut empty = true;
+
+        let mut pending_diff_points_time = 0.0;
+        let mut pending_diff_point = None;
 
         while next_line!($reader)? != 0 {
             if let Some(bytes) = $reader.get_section() {
@@ -219,64 +279,122 @@ macro_rules! parse_timingpoints_body {
             let line = $reader.get_line()?;
             let mut split = line.split(',');
 
-            let time = split
+            let time_opt = split
                 .next()
-                .next_field("timing point time")?
-                .trim()
-                .parse::<f64>()?
-                .validate()?;
+                .next_field("timing point time")
+                .map(str::trim)
+                .map(f64::parse_in_range)?;
 
+            let time = match time_opt {
+                Some(time) => time,
+                None => continue,
+            };
+
+            // * beatLength is allowed to be NaN to handle an edge case in which
+            // * some beatmaps use NaN slider velocity to disable slider tick
+            // * generation (see LegacyDifficultyControlPoint).
             let beat_len: f64 = split.next().next_field("beat len")?.trim().parse()?;
-            let timing_change = split.nth(4).and_then(|value| value.bytes().next());
-            let effect_flags = split.next().and_then(|value| value.bytes().next());
 
-            let kiai = matches!(effect_flags, Some(b'1'));
+            if !(beat_len.is_in_range() || beat_len.is_nan()) {
+                continue;
+            }
 
-            if matches!(timing_change, Some(b'1') | None) {
-                let beat_len = beat_len.clamp(6.0, 60_000.0);
+            let mut timing_change = true;
+            let mut kiai = false;
 
-                let point = TimingPoint {
-                    time,
-                    beat_len,
-                    kiai,
-                };
+            enum Status {
+                Ok,
+                Err,
+            }
 
-                $self.timing_points.push(point);
-
-                if time < prev_time {
-                    unsorted_timings = true;
-                } else {
-                    prev_time = time;
+            fn parse_remaining<'s, I>(
+                mut split: I,
+                timing_change: &mut bool,
+                kiai: &mut bool,
+            ) -> Status
+            where
+                I: Iterator<Item = &'s str>,
+            {
+                match split
+                    .next()
+                    .filter(|&sig| !sig.starts_with('0'))
+                    .map(i32::parse_in_range)
+                {
+                    Some(Some(time_sig)) if time_sig < 1 => return Status::Err,
+                    Some(Some(_)) => {}
+                    None => return Status::Ok,
+                    Some(None) => return Status::Err,
                 }
+
+                match split.next().map(i32::parse_in_range) {
+                    Some(Some(_)) => {}
+                    Some(None) => return Status::Err,
+                    None => return Status::Ok,
+                }
+
+                match split.next().map(i32::parse_in_range) {
+                    Some(Some(_)) => {}
+                    Some(None) => return Status::Err,
+                    None => return Status::Ok,
+                }
+
+                match split.next().map(i32::parse_in_range) {
+                    Some(Some(_)) => {}
+                    Some(None) => return Status::Err,
+                    None => return Status::Ok,
+                }
+
+                if let Some(byte) = split.next().and_then(|value| value.bytes().next()) {
+                    *timing_change = byte == b'1';
+                } else {
+                    return Status::Ok;
+                }
+
+                match split.next().map(i32::parse_in_range) {
+                    Some(Some(effect_flags)) => *kiai = (effect_flags & KIAI_FLAG) > 0,
+                    Some(None) => return Status::Err,
+                    None => return Status::Ok,
+                }
+
+                Status::Ok
+            }
+
+            if let Status::Err = parse_remaining(split, &mut timing_change, &mut kiai) {
+                continue;
+            }
+
+            // * If beatLength is NaN, speedMultiplier should still be 1
+            // * because all comparisons against NaN are false.
+            let speed_multiplier = if beat_len < 0.0 {
+                (100.0 / -beat_len)
             } else {
-                let speed_multiplier = if beat_len < 0.0 {
-                    (-100.0 / beat_len).clamp(0.1, 10.0)
-                } else {
-                    1.0
-                };
+                1.0
+            };
 
-                let point = DifficultyPoint {
-                    time,
-                    speed_multiplier,
-                    kiai,
-                };
-
-                $self.difficulty_points.push(point);
-
-                if time < prev_diff {
-                    unsorted_difficulties = true;
-                } else {
-                    prev_diff = time;
+            if time != pending_diff_points_time {
+                if let Some(point) = pending_diff_point.take() {
+                    $self.difficulty_points.push_if_not_redundant(point);
                 }
             }
+
+            if timing_change {
+                let point = TimingPoint::new(time, beat_len.clamp(6.0, 60_000.0));
+
+                $self.timing_points.push(point);
+            }
+
+            if !timing_change || pending_diff_point.is_none() {
+                pending_diff_point = Some(DifficultyPoint::new(time, beat_len, speed_multiplier));
+            }
+
+            let effect_point = EffectPoint::new(time, kiai);
+            $self.effect_points.push(effect_point);
+
+            pending_diff_points_time = time;
         }
 
-        if unsorted_timings {
-            sort_unstable(&mut $self.timing_points);
-        }
-
-        if unsorted_difficulties {
-            sort_unstable(&mut $self.difficulty_points);
+        if let Some(point) = pending_diff_point {
+            $self.difficulty_points.push_if_not_redundant(point);
         }
 
         Ok(empty)
@@ -292,8 +410,8 @@ macro_rules! parse_hitobjects_body {
         // `point_split` will be of type `Vec<&str>
         // with each element having its lifetime bound to `buf`.
         // To circumvent this, `point_split_raw` will contain
-        // the actual `&str` elements transmuted into `usize`.
-        let mut point_split_raw: Vec<usize> = Vec::new();
+        // the actual `&str` elements transmuted into `(usize, usize)`.
+        let mut point_split_raw: Vec<(usize, usize)> = Vec::new();
 
         // Buffer to re-use for all sliders
         let mut vertices = Vec::new();
@@ -308,50 +426,122 @@ macro_rules! parse_hitobjects_body {
             let line = $reader.get_line()?;
             let mut split = line.split(',');
 
-            let pos = Pos2 {
-                x: split.next().next_field("x pos")?.parse()?,
-                y: split.next().next_field("y pos")?.parse()?,
+            let x = split
+                .next()
+                .next_field("x pos")
+                .map(|s| f32::parse_in_custom_range(s, MAX_COORDINATE_VALUE as f32))?
+                .map(|x| x as i32 as f32);
+
+            let y = split
+                .next()
+                .next_field("y pos")
+                .map(|s| f32::parse_in_custom_range(s, MAX_COORDINATE_VALUE as f32))?
+                .map(|x| x as i32 as f32);
+
+            let pos = if let (Some(x), Some(y)) = (x, y) {
+                Pos2 { x, y }
+            } else {
+                continue;
             };
 
-            let time = split
+            let time_opt = split
                 .next()
-                .next_field("hitobject time")?
-                .trim()
-                .parse::<f64>()?
-                .validate()?;
+                .next_field("hitobject time")
+                .map(str::trim)
+                .map(f64::parse_in_range)?;
+
+            let time = match time_opt {
+                Some(time) => time,
+                None => continue,
+            };
 
             if !$self.hit_objects.is_empty() && time < prev_time {
                 unsorted = true;
             }
 
-            let kind: u8 = split.next().next_field("hitobject kind")?.parse()?;
-            let sound = split.next().map(str::parse).transpose()?.unwrap_or(0);
+            let kind: u8 = match split.next().next_field("hitobject kind")?.parse() {
+                Ok(kind) => kind,
+                Err(_) => continue,
+            };
+
+            let mut sound: u8 = match split.next().next_field("sound")?.parse() {
+                Ok(sound) => sound,
+                Err(_) => continue,
+            };
+
+            #[derive(Debug)]
+            enum Status {
+                Ok(bool),
+                Skip,
+                Err(ParseError),
+            }
+
+            fn has_custom_sound_file(bank_info: Option<&str>) -> Status {
+                let mut split = match bank_info {
+                    Some(s) if !s.is_empty() => s.split(':'),
+                    _ => return Status::Ok(false),
+                };
+
+                match split.next().map(i32::parse_in_range) {
+                    Some(Some(_)) => {}
+                    Some(None) => return Status::Skip,
+                    None => return Status::Err(ParseError::MissingField("normal set")),
+                }
+
+                match split.next().map(i32::parse_in_range) {
+                    Some(Some(_)) => {}
+                    Some(None) => return Status::Skip,
+                    None => return Status::Err(ParseError::MissingField("additional set")),
+                }
+
+                match split.next().map(i32::parse_in_range) {
+                    Some(Some(_)) => {}
+                    None => return Status::Ok(false),
+                    Some(None) => return Status::Skip,
+                }
+
+                match split.next().map(i32::parse_in_range) {
+                    Some(Some(_)) => {}
+                    None => return Status::Ok(false),
+                    Some(None) => return Status::Skip,
+                }
+
+                let filename = split.next().filter(|filename| !filename.is_empty());
+
+                Status::Ok(filename.is_some())
+            }
 
             let kind = if kind & Self::CIRCLE_FLAG > 0 {
+                match has_custom_sound_file(split.next()) {
+                    Status::Ok(false) => {}
+                    Status::Ok(true) => sound = 0,
+                    Status::Skip => continue,
+                    Status::Err(err) => return Err(err),
+                }
+
                 $self.n_circles += 1;
 
                 HitObjectKind::Circle
             } else if kind & Self::SLIDER_FLAG > 0 {
                 $self.n_sliders += 1;
 
-                let mut control_points = Vec::new();
+                // Control Points: [1, 94872] | Median=3 | Mean=2.9984
+                let mut control_points = Vec::with_capacity(3);
 
                 let control_point_iter = split.next().next_field("control points")?.split('|');
-                let mut repeats: usize = split.next().next_field("repeats")?.parse()?;
 
-                if repeats > 9000 {
-                    return Err(ParseError::TooManyRepeats);
-                }
-
-                // * osu-stable treated the first span of the slider
-                // * as a repeat, but no repeats are happening
-                repeats = repeats.saturating_sub(1);
+                let repeats = match split.next().next_field("repeats")?.parse::<usize>() {
+                    // * osu-stable treated the first span of the slider
+                    // * as a repeat, but no repeats are happening
+                    Ok(repeats @ 0..=9000) => repeats.saturating_sub(1),
+                    Ok(_) | Err(_) => continue,
+                };
 
                 let mut start_idx = 0;
                 let mut end_idx = 0;
                 let mut first = true;
 
-                // SAFETY: `Vec<usize>` and `Vec<&str>` have the same size and layout.
+                // SAFETY: `Vec<(usize, usize)>` and `Vec<&str>` have the same size and layout.
                 let point_split: &mut Vec<&str> =
                     unsafe { std::mem::transmute(&mut point_split_raw) };
 
@@ -402,26 +592,33 @@ macro_rules! parse_hitobjects_body {
                 if control_points.is_empty() {
                     HitObjectKind::Circle
                 } else {
-                    let pixel_len = split
+                    let pixel_len = match split
                         .next()
-                        .next_field("pixel len")?
-                        .parse::<f64>()?
-                        .max(0.0)
-                        .min(MAX_COORDINATE_VALUE);
-
-                    let edge_sounds_opt = split.next().map(|sounds| {
-                        sounds
-                            .split('|')
-                            .take(repeats + 2)
-                            .map(parse_custom_sound)
-                            .collect::<Result<Vec<_>, _>>()
-                    });
-
-                    let edge_sounds = match edge_sounds_opt {
-                        None => Vec::new(),
-                        Some(Ok(sounds)) => sounds,
-                        Some(Err(err)) => return Err(err),
+                        .map(|s| f64::parse_in_custom_range(s, MAX_COORDINATE_VALUE as f64))
+                    {
+                        Some(Some(len)) => (len > 0.0).then_some(len),
+                        Some(None) => continue,
+                        None => None,
                     };
+
+                    let mut edge_sounds = vec![sound; repeats + 2];
+
+                    split
+                        .next()
+                        .map(|sounds| sounds.split('|').map(parse_custom_sound))
+                        .into_iter()
+                        .flatten()
+                        .zip(edge_sounds.iter_mut())
+                        .for_each(|(parsed, sound)| *sound = parsed);
+
+                    // Note: Edge sets are currently not considered, seems to be fine though.
+
+                    match has_custom_sound_file(split.nth(1)) {
+                        Status::Ok(false) => {}
+                        Status::Ok(true) => sound = 0,
+                        Status::Skip => continue,
+                        Status::Err(err) => return Err(err),
+                    }
 
                     HitObjectKind::Slider {
                         repeats,
@@ -432,18 +629,43 @@ macro_rules! parse_hitobjects_body {
                 }
             } else if kind & Self::SPINNER_FLAG > 0 {
                 $self.n_spinners += 1;
-                let end_time = split.next().next_field("spinner endtime")?.parse()?;
+
+                let end_time = match split.next().next_field("spinner endtime")?.parse::<f64>() {
+                    Ok(end_time) => end_time.max(time),
+                    Err(_) => continue,
+                };
+
+                match has_custom_sound_file(split.next()) {
+                    Status::Ok(false) => {}
+                    Status::Ok(true) => sound = 0,
+                    Status::Skip => continue,
+                    Status::Err(err) => return Err(err),
+                }
 
                 HitObjectKind::Spinner { end_time }
             } else if kind & Self::HOLD_FLAG > 0 {
                 $self.n_sliders += 1;
-                let mut end = time;
 
-                if let Some(next) = split.next() {
-                    end = end.max(next.split(':').next().next_field("hold endtime")?.parse()?);
-                }
+                let end_time = match split.next().and_then(|s| s.split_once(':')) {
+                    Some((head, tail)) => {
+                        let parsed = match f64::parse_in_range(head) {
+                            Some(time_) => time_.max(time),
+                            None => continue,
+                        };
 
-                HitObjectKind::Hold { end_time: end }
+                        match has_custom_sound_file(Some(tail)) {
+                            Status::Ok(false) => {}
+                            Status::Ok(true) => sound = 0,
+                            Status::Skip => continue,
+                            Status::Err(err) => return Err(err),
+                        }
+
+                        parsed
+                    }
+                    None => time,
+                };
+
+                HitObjectKind::Hold { end_time }
             } else {
                 return Err(ParseError::UnknownHitObjectKind);
             };
@@ -453,35 +675,48 @@ macro_rules! parse_hitobjects_body {
                 start_time: time,
                 kind,
             });
+
             $self.sounds.push(sound);
 
             prev_time = time;
         }
 
-        // BUG: If [General] section comes after [HitObjects] then the mode
-        // won't be set yet so mania objects won't be sorted properly
-        if $self.mode == GameMode::Mania {
-            // First a _stable_ sort by time
-            $self
-                .hit_objects
-                .sort_by(|p1, p2| p1.partial_cmp(p2).unwrap_or(Ordering::Equal));
+        match $self.mode {
+            GameMode::Osu | GameMode::Taiko | GameMode::Catch if !unsorted => {}
+            GameMode::Osu | GameMode::Taiko => {
+                // Sort both hitobjects and hitsounds
+                let mut sorter = TandemSorter::new(&$self.hit_objects, false);
+                sorter.sort(&mut $self.hit_objects);
+                sorter.toggle_marks();
+                sorter.sort(&mut $self.sounds);
+            }
+            GameMode::Mania => {
+                // First a _stable_ sort by time
+                $self
+                    .hit_objects
+                    .sort_by(|p1, p2| p1.partial_cmp(p2).unwrap_or(Ordering::Equal));
 
-            // Then the legacy sort for correct position order
-            legacy_sort(&mut $self.hit_objects);
-        } else if unsorted {
-            sort_unstable(&mut $self.hit_objects);
+                // Then the legacy sort for correct position order
+                legacy_sort(&mut $self.hit_objects);
+            }
+            GameMode::Catch => $self
+                .hit_objects
+                .sort_unstable_by(|h1, h2| h1.partial_cmp(h2).unwrap_or(Ordering::Equal)),
         }
 
         Ok(empty)
     }};
 }
 
-// Required for maps with slider edge sound values above 255 e.g. map id 80799
-fn parse_custom_sound(sound: &str) -> ParseResult<u8> {
-    sound.bytes().try_fold(0_u8, |sound, byte| match byte {
-        b'0'..=b'9' => Ok(sound.wrapping_mul(10).wrapping_add((byte & 0xF) as u8)),
-        _ => Err(ParseError::InvalidInteger),
-    })
+// Required for maps with slider edge sound values above 255 e.g. map /b/80799
+fn parse_custom_sound(sound: &str) -> u8 {
+    sound
+        .bytes()
+        .try_fold(0_u8, |sound, byte| match byte {
+            b'0'..=b'9' => Some(sound.wrapping_mul(10).wrapping_add((byte & 0xF) as u8)),
+            _ => None,
+        })
+        .unwrap_or(0)
 }
 
 macro_rules! parse_body {
@@ -495,8 +730,20 @@ macro_rules! parse_body {
 
         let mut map = Beatmap {
             version: reader.version()?,
-            hit_objects: Vec::with_capacity(256),
-            sounds: Vec::with_capacity(256),
+            // Hit Objects & Sounds: [0, 40841] | Median=352 | Mean=546.0799
+            hit_objects: Vec::with_capacity(512),
+            sounds: Vec::with_capacity(512),
+            // Timing Points: [0, 22105] | Median=1 | Mean=6.0967
+            timing_points: SortedVec::<TimingPoint>::with_capacity(1),
+            // Difficulty Points: [0, 21910] | Median=4 | Mean=26.4693
+            // Don't allocate for the few maps without difficulty points.
+            // Once the first point is pushed, it allocates 4 immediately anyway.
+            difficulty_points: SortedVec::default(),
+            // Effect Points: [0, 30709] | Median=26 | Mean=69.2225
+            effect_points: SortedVec::<EffectPoint>::with_capacity(32),
+            // Breaks: [0, 55] | Median=0 | Mean=0.7901
+            // Don't allocate
+            breaks: Vec::new(),
             ..Default::default()
         };
 
@@ -538,8 +785,6 @@ mod slider_parsing {
     use crate::ParseError;
 
     use super::Pos2;
-
-    pub(super) const MAX_COORDINATE_VALUE: f64 = 131_072.0;
 
     pub(super) fn convert_points(
         points: &[&str],
@@ -605,6 +850,15 @@ mod slider_parsing {
         } {
             // * Keep incrementing while an implicit segment doesn't need to be started
             if vertices[end_idx].pos != vertices[end_idx - 1].pos {
+                continue;
+            }
+
+            // * Legacy Catmull sliders don't support multiple segments,
+            // * so adjacent Catmull segments should be treated as a single one.
+            // * Importantly, this is not applied to the first control point,
+            // * which may duplicate the slider path's position
+            // * resulting in a duplicate (0,0) control point in the resultant list.
+            if path_kind == PathType::Catmull && end_idx > 1 {
                 continue;
             }
 
@@ -733,6 +987,7 @@ impl Beatmap {
     ) -> ParseResult<bool> {
         parse_timingpoints_body!(self, reader, section)
     }
+
     /// Pass the path to a `.osu` file.
     ///
     /// Useful when you don't want to create the [`File`](std::fs::File) manually.
@@ -740,6 +995,11 @@ impl Beatmap {
     /// passing `&file` to [`parse`](Beatmap::parse) should be preferred.
     pub fn from_path<P: AsRef<Path>>(path: P) -> ParseResult<Self> {
         Self::parse(File::open(path)?)
+    }
+
+    /// Parse the content of a `.osu` file in form of a slice of bytes into a beatmap.
+    pub fn from_bytes(bytes: &[u8]) -> ParseResult<Self> {
+        Self::parse(bytes)
     }
 }
 
@@ -801,6 +1061,11 @@ impl Beatmap {
     pub async fn from_path<P: AsRef<Path>>(path: P) -> ParseResult<Self> {
         Self::parse(File::open(path).await?).await
     }
+
+    /// Parse the content of a `.osu` file in form of a slice of bytes into a beatmap.
+    pub async fn from_bytes(bytes: &[u8]) -> ParseResult<Self> {
+        Self::parse(bytes).await
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -823,93 +1088,5 @@ impl Section {
             b"Events" => Self::Events,
             _ => Self::None,
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[cfg(not(any(feature = "async_std", feature = "async_tokio")))]
-    #[test]
-    fn parsing_sync() {
-        for map_id in map_ids() {
-            println!("map_id: {}", map_id);
-
-            let map = match Beatmap::from_path(format!("./maps/{}.osu", map_id)) {
-                Ok(map) => map,
-                Err(why) => panic!("Error while parsing map: {}", why),
-            };
-
-            print_info(map);
-            println!("---");
-        }
-    }
-
-    #[cfg(feature = "async_tokio")]
-    #[test]
-    fn parsing_async_tokio() {
-        use tokio::runtime::Builder;
-
-        Builder::new_current_thread()
-            .build()
-            .expect("could not start runtime")
-            .block_on(async {
-                for map_id in map_ids() {
-                    println!("map_id: {}", map_id);
-
-                    let map = match Beatmap::from_path(format!("./maps/{}.osu", map_id)).await {
-                        Ok(map) => map,
-                        Err(why) => panic!("Error while parsing map: {}", why),
-                    };
-
-                    print_info(map);
-                    println!("---");
-                }
-            });
-    }
-
-    #[cfg(feature = "async_std")]
-    #[test]
-    fn parsing_async_std() {
-        async_std::task::block_on(async {
-            for map_id in map_ids() {
-                println!("map_id: {}", map_id);
-
-                let map = match Beatmap::from_path(format!("./maps/{}.osu", map_id)).await {
-                    Ok(map) => map,
-                    Err(why) => panic!("Error while parsing map: {}", why),
-                };
-
-                print_info(map);
-                println!("---");
-            }
-        });
-    }
-
-    fn map_ids() -> Vec<i32> {
-        vec![
-            2785319, // osu
-            1974394, // mania
-            2118524, // catch
-            1028484, // taiko
-        ]
-    }
-
-    fn print_info(map: Beatmap) {
-        println!("Mode: {}", map.mode as u8);
-        println!("n_circles: {}", map.n_circles);
-        println!("n_sliders: {}", map.n_sliders);
-        println!("n_spinners: {}", map.n_spinners);
-        println!("ar: {}", map.ar);
-        println!("od: {}", map.od);
-        println!("cs: {}", map.cs);
-        println!("hp: {}", map.hp);
-        println!("slider_mult: {}", map.slider_mult);
-        println!("tick_rate: {}", map.tick_rate);
-        println!("hit_objects: {}", map.hit_objects.len());
-        println!("stack_leniency: {}", map.stack_leniency);
-        println!("timing_points: {}", map.timing_points.len());
-        println!("difficulty_points: {}", map.difficulty_points.len());
     }
 }

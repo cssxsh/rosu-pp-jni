@@ -1,7 +1,11 @@
 use crate::{
-    beatmap::converts::mania::{
-        legacy_random::Random, pattern::Pattern, pattern_type::PatternType, PrevValues,
+    beatmap::{
+        converts::mania::{
+            legacy_random::Random, pattern::Pattern, pattern_type::PatternType, PrevValues,
+        },
+        EffectPoint,
     },
+    mania::ManiaObject,
     parse::{HitObject, HitSound},
     Beatmap,
 };
@@ -60,18 +64,9 @@ impl<'h> HitObjectPatternGenerator<'h> {
         } else if density < timing_point.beat_len / 2.5 {
             // * High density
         } else {
-            let difficulty_point = orig.difficulty_point_at(hit_object.start_time);
-
-            let kiai = match difficulty_point {
-                Some(difficulty_point) => {
-                    if timing_point.time < difficulty_point.time {
-                        difficulty_point.kiai
-                    } else {
-                        timing_point.kiai
-                    }
-                }
-                None => timing_point.kiai,
-            };
+            let kiai = orig
+                .effect_point_at(hit_object.start_time)
+                .map_or(EffectPoint::DEFAULT_KIAI, |point| point.kiai);
 
             if kiai {
                 // * High density
@@ -104,14 +99,13 @@ impl<'h> HitObjectPatternGenerator<'h> {
         let pattern = self.generate_core();
 
         for obj in pattern.hit_objects.iter() {
-            if self.convert_type.contains(PatternType::STAIR)
-                && obj.column(self.total_columns as f32) as i32 == self.total_columns - 1
-            {
+            let col = ManiaObject::column(obj.pos.x, self.total_columns as f32) as i32;
+
+            if self.convert_type.contains(PatternType::STAIR) && col == self.total_columns - 1 {
                 self.stair_type = PatternType::REVERSE_STAIR;
             }
 
-            if self.convert_type.contains(PatternType::REVERSE_STAIR)
-                && obj.column(self.total_columns as f32) as i32 == self.random_start()
+            if self.convert_type.contains(PatternType::REVERSE_STAIR) && col == self.random_start()
             {
                 self.stair_type = PatternType::STAIR;
             }
@@ -125,11 +119,9 @@ impl<'h> HitObjectPatternGenerator<'h> {
             return Pattern::new_note(self, 0);
         }
 
-        let last_column = self
-            .prev_pattern
-            .hit_objects
-            .last()
-            .map_or(0, |h| h.column(self.total_columns as f32));
+        let last_column = self.prev_pattern.hit_objects.last().map_or(0, |h| {
+            ManiaObject::column(h.pos.x, self.total_columns as f32) as u8
+        });
 
         let random_start = self.random_start() as u8;
 

@@ -1,5 +1,4 @@
 use std::{
-    cmp::Ordering,
     iter::{Cycle, Skip, Take},
     ops::Index,
     slice::Iter,
@@ -71,15 +70,6 @@ impl<T, const N: usize> LimitedQueue<T, N> {
         }
     }
 
-    pub(crate) fn clear(&mut self) {
-        self.end = N - 1;
-        self.len = 0;
-    }
-
-    pub(crate) fn full(&self) -> bool {
-        self.len == N
-    }
-
     pub(crate) fn iter(&self) -> LimitedQueueIter<'_, T> {
         self.queue
             .iter()
@@ -90,20 +80,6 @@ impl<T, const N: usize> LimitedQueue<T, N> {
 }
 
 pub(crate) type LimitedQueueIter<'a, T> = Take<Skip<Cycle<Iter<'a, T>>>>;
-
-impl<T: PartialOrd, const N: usize> LimitedQueue<T, N> {
-    pub(crate) fn min(&self) -> Option<&T> {
-        self.queue
-            .iter()
-            .take(self.len)
-            .reduce(|min, next| match min.partial_cmp(next) {
-                Some(Ordering::Less) => min,
-                Some(Ordering::Equal) => min,
-                Some(Ordering::Greater) => next,
-                None => min,
-            })
-    }
-}
 
 impl<T, const N: usize> Index<usize> for LimitedQueue<T, N> {
     type Output = T;
@@ -156,7 +132,7 @@ mod test {
         }
 
         assert_eq!(queue.last(), Some(&5));
-        assert!(queue.iter().eq(vec![2, 3, 4, 5].iter()));
+        assert!(queue.iter().eq(&[2, 3, 4, 5]));
         assert_eq!(queue[0], 2);
         assert_eq!(queue[3], 5);
     }

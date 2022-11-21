@@ -1,4 +1,4 @@
-use crate::{parse::HitObject, Beatmap};
+use crate::{mania::ManiaObject, parse::HitObject, Beatmap};
 
 use super::{legacy_random::Random, pattern::Pattern};
 
@@ -21,15 +21,13 @@ trait PatternGenerator {
     fn get_column(&self, allow_special: Option<bool>) -> u8 {
         let allow_special = allow_special.unwrap_or(false);
 
-        let res = if allow_special && self.total_columns() == 8 {
+        if allow_special && self.total_columns() == 8 {
             const LOCAL_X_DIVISOR: f32 = 512.0 / 7.0;
 
             ((self.hit_object().pos.x / LOCAL_X_DIVISOR).floor() as u8).clamp(0, 6) + 1
         } else {
-            self.hit_object().column(self.total_columns() as f32)
-        };
-
-        res
+            ManiaObject::column(self.hit_object().pos.x, self.total_columns() as f32) as u8
+        }
     }
 
     fn get_random_note_count(

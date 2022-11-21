@@ -4,30 +4,29 @@ mod gradual_performance;
 mod osu_object;
 mod pp;
 mod scaling_factor;
-mod skill;
-mod skill_kind;
-mod slider_state;
+mod skills;
 
-use std::mem;
+use crate::{curve::CurveBuffers, parse::Pos2, AnyStars, Beatmap, GameMode, Mods};
 
-use difficulty_object::DifficultyObject;
-pub use gradual_difficulty::*;
-pub use gradual_performance::*;
-use osu_object::{ObjectParameters, OsuObject};
-pub use pp::*;
-use scaling_factor::ScalingFactor;
-use skill::Skill;
-use skill_kind::SkillKind;
-use slider_state::SliderState;
+use self::{
+    difficulty_object::{Distances, OsuDifficultyObject},
+    osu_object::{ObjectParameters, OsuObject},
+    scaling_factor::ScalingFactor,
+    skills::{Skill, Skills},
+};
 
-use crate::{curve::CurveBuffers, AnyStars, Beatmap, GameMode, Mods};
-
-use self::skill::Skills;
+pub use self::{gradual_difficulty::*, gradual_performance::*, pp::*};
 
 const SECTION_LEN: f64 = 400.0;
 const DIFFICULTY_MULTIPLIER: f64 = 0.0675;
-const NORMALIZED_RADIUS: f32 = 50.0; // * diameter of 100; easier mental maths.
+// * Change radius to 50 to make 100 the diameter. Easier for mental maths.
+const NORMALIZED_RADIUS: f32 = 50.0;
 const STACK_DISTANCE: f32 = 3.0;
+// * This is being adjusted to keep the final pp value scaled around what it used to be when changing things.
+const PERFORMANCE_BASE_MULTIPLIER: f64 = 1.14;
+const PREEMPT_MIN: f64 = 450.0;
+const FADE_IN_DURATION_MULTIPLIER: f64 = 0.4;
+const PLAYFIELD_BASE_SIZE: Pos2 = Pos2 { x: 512.0, y: 384.0 };
 
 /// Difficulty calculator on osu!standard maps.
 ///
@@ -113,60 +112,74 @@ impl<'map> OsuStars<'map> {
     /// Calculate all difficulty related values, including stars.
     #[inline]
     pub fn calculate(self) -> OsuDifficultyAttributes {
-        let (mut skills, mut attributes) = calculate_skills(self);
+        let mods = self.mods;
 
-        let aim_rating = {
-            let aim = skills.aim();
-            let mut aim_strains = mem::take(&mut aim.strain_peaks);
+        let (skills, mut attrs) = calculate_skills(self);
 
-            Skill::difficulty_value(&mut aim_strains, aim).sqrt() * DIFFICULTY_MULTIPLIER
-        };
+        let Skills {
+            mut aim,
+            mut aim_no_sliders,
+            mut speed,
+            mut flashlight,
+        } = skills;
+
+        let mut aim_rating = aim.difficulty_value().sqrt() * DIFFICULTY_MULTIPLIER;
+        let aim_rating_no_sliders =
+            aim_no_sliders.difficulty_value().sqrt() * DIFFICULTY_MULTIPLIER;
+
+        let speed_notes = speed.relevant_note_count();
+        let mut speed_rating = speed.difficulty_value().sqrt() * DIFFICULTY_MULTIPLIER;
+
+        let mut flashlight_rating = flashlight.difficulty_value().sqrt() * DIFFICULTY_MULTIPLIER;
 
         let slider_factor = if aim_rating > 0.0 {
-            let aim_no_sliders = skills.aim_no_sliders();
-
-            let mut aim_strains_no_sliders = mem::take(&mut aim_no_sliders.strain_peaks);
-            let aim_rating_no_sliders =
-                Skill::difficulty_value(&mut aim_strains_no_sliders, aim_no_sliders).sqrt()
-                    * DIFFICULTY_MULTIPLIER;
-
             aim_rating_no_sliders / aim_rating
         } else {
             1.0
         };
 
-        let (speed, flashlight) = skills.speed_flashlight();
+        if mods.td() {
+            aim_rating = aim_rating.powf(0.8);
+            flashlight_rating = flashlight_rating.powf(0.8);
+        }
 
-        let speed_rating = if let Some(speed) = speed {
-            let mut speed_strains = mem::take(&mut speed.strain_peaks);
+        if mods.rx() {
+            aim_rating *= 0.9;
+            speed_rating = 0.0;
+            flashlight_rating *= 0.7;
+        }
 
-            Skill::difficulty_value(&mut speed_strains, speed).sqrt() * DIFFICULTY_MULTIPLIER
+        let base_aim_performance = (5.0 * (aim_rating / 0.0675).max(1.0) - 4.0).powi(3) / 100_000.0;
+        let base_speed_performance =
+            (5.0 * (speed_rating / 0.0675).max(1.0) - 4.0).powi(3) / 100_000.0;
+
+        let base_flashlight_performance = if mods.fl() {
+            flashlight_rating * flashlight_rating * 25.0
         } else {
             0.0
         };
 
-        let flashlight_rating = if let Some(flashlight) = flashlight {
-            let mut flashlight_strains = mem::take(&mut flashlight.strain_peaks);
+        let base_performance = ((base_aim_performance).powf(1.1)
+            + (base_speed_performance).powf(1.1)
+            + (base_flashlight_performance).powf(1.1))
+        .powf(1.0 / 1.1);
 
-            Skill::difficulty_value(&mut flashlight_strains, flashlight).sqrt()
-                * DIFFICULTY_MULTIPLIER
+        let star_rating = if base_performance > 0.00001 {
+            PERFORMANCE_BASE_MULTIPLIER.cbrt()
+                * 0.027
+                * ((100_000.0 / 2.0_f64.powf(1.0 / 1.1) * base_performance).cbrt() + 4.0)
         } else {
             0.0
         };
 
-        let star_rating = if attributes.max_combo == 0 {
-            0.0
-        } else {
-            calculate_star_rating(aim_rating, speed_rating, flashlight_rating)
-        };
+        attrs.aim = aim_rating;
+        attrs.speed = speed_rating;
+        attrs.flashlight = flashlight_rating;
+        attrs.slider_factor = slider_factor;
+        attrs.stars = star_rating;
+        attrs.speed_note_count = speed_notes;
 
-        attributes.aim_strain = aim_rating;
-        attributes.speed_strain = speed_rating;
-        attributes.flashlight_rating = flashlight_rating;
-        attributes.slider_factor = slider_factor;
-        attributes.stars = star_rating;
-
-        attributes
+        attrs
     }
 
     /// Calculate the skill strains.
@@ -174,38 +187,31 @@ impl<'map> OsuStars<'map> {
     /// Suitable to plot the difficulty of a map over time.
     #[inline]
     pub fn strains(self) -> OsuStrains {
-        let clock_rate = self.clock_rate.unwrap_or_else(|| self.mods.clock_rate());
-        let (mut skills, _) = calculate_skills(self);
+        let (skills, _) = calculate_skills(self);
 
-        let len = skills.aim().strain_peaks.len();
-        let (speed, flashlight) = skills.speed_flashlight();
-
-        let speed = speed.map_or_else(
-            || vec![0.0; len],
-            |skill| mem::take(&mut skill.strain_peaks),
-        );
-
-        let flashlight = flashlight.map_or_else(
-            || vec![0.0; len],
-            |skill| mem::take(&mut skill.strain_peaks),
-        );
-
-        OsuStrains {
-            section_len: SECTION_LEN * clock_rate,
-            aim: mem::take(&mut skills.aim().strain_peaks),
-            aim_no_sliders: mem::take(&mut skills.aim_no_sliders().strain_peaks),
+        let Skills {
+            aim,
+            aim_no_sliders,
             speed,
             flashlight,
+        } = skills;
+
+        OsuStrains {
+            section_len: SECTION_LEN,
+            aim: aim.strain_peaks,
+            aim_no_sliders: aim_no_sliders.strain_peaks,
+            speed: speed.strain_peaks,
+            flashlight: flashlight.strain_peaks,
         }
     }
 }
 
-/// The result of calculating the strains on a osu!taiko map.
+/// The result of calculating the strains on a osu! map.
 /// Suitable to plot the difficulty of a map over time.
 #[derive(Clone, Debug)]
 pub struct OsuStrains {
     /// Time in ms inbetween two strains.
-    pub section_len: f64,
+    pub section_len: f64, // TODO: remove field, make it a method
     /// Strain peaks of the aim skill.
     pub aim: Vec<f64>,
     /// Strain peaks of the aim skill without sliders.
@@ -225,35 +231,6 @@ impl OsuStrains {
     }
 }
 
-fn calculate_star_rating(aim_rating: f64, speed_rating: f64, flashlight_rating: f64) -> f64 {
-    let base_aim_performance = {
-        let base = 5.0 * (aim_rating / 0.0675).max(1.0) - 4.0;
-
-        base * base * base / 100_000.0
-    };
-
-    let base_speed_performance = {
-        let base = 5.0 * (speed_rating / 0.0675).max(1.0) - 4.0;
-
-        base * base * base / 100_000.0
-    };
-
-    let base_flashlight_performance = flashlight_rating * flashlight_rating * 25.0;
-
-    let base_performance = (base_aim_performance.powf(1.1)
-        + base_speed_performance.powf(1.1)
-        + base_flashlight_performance.powf(1.1))
-    .powf(1.0 / 1.1);
-
-    if base_performance > 0.00001 {
-        1.12_f64.cbrt()
-            * 0.027
-            * ((100_000.0 / (1.0_f64 / 1.1).exp2() * base_performance).cbrt() + 4.0)
-    } else {
-        0.0
-    }
-}
-
 fn calculate_skills(params: OsuStars<'_>) -> (Skills, OsuDifficultyAttributes) {
     let OsuStars {
         map,
@@ -265,35 +242,46 @@ fn calculate_skills(params: OsuStars<'_>) -> (Skills, OsuDifficultyAttributes) {
     let take = passed_objects.unwrap_or(map.hit_objects.len());
     let clock_rate = clock_rate.unwrap_or_else(|| mods.clock_rate());
 
-    let map_attributes = map.attributes().mods(mods).clock_rate(clock_rate).build();
-    let scaling_factor = ScalingFactor::new(map_attributes.cs);
+    let map_attrs = map.attributes().mods(mods).clock_rate(clock_rate).build();
+    let scaling_factor = ScalingFactor::new(map_attrs.cs);
     let hr = mods.hr();
-    let time_preempt = map_attributes.hit_windows.ar;
-    let hit_window = map_attributes.hit_windows.od;
+    let hit_window = 2.0 * map_attrs.hit_windows.od;
+    let time_preempt = (map_attrs.hit_windows.ar * clock_rate) as f32 as f64;
 
-    let mut attributes = OsuDifficultyAttributes {
-        ar: map_attributes.ar,
-        hp: map_attributes.hp,
-        od: map_attributes.od,
+    // * Preempt time can go below 450ms. Normally, this is achieved via the DT mod
+    // * which uniformly speeds up all animations game wide regardless of AR.
+    // * This uniform speedup is hard to match 1:1, however we can at least make
+    // * AR>10 (via mods) feel good by extending the upper linear function above.
+    // * Note that this doesn't exactly match the AR>10 visuals as they're
+    // * classically known, but it feels good.
+    // * This adjustment is necessary for AR>10, otherwise TimePreempt can
+    // * become smaller leading to hitcircles not fully fading in.
+    let time_fade_in = if mods.hd() {
+        time_preempt * FADE_IN_DURATION_MULTIPLIER
+    } else {
+        400.0 * (time_preempt / PREEMPT_MIN).min(1.0)
+    };
+
+    let mut attrs = OsuDifficultyAttributes {
+        ar: map_attrs.ar,
+        hp: map_attrs.hp,
+        od: map_attrs.od,
         ..Default::default()
     };
 
     let mut params = ObjectParameters {
         map,
-        attributes: &mut attributes,
-        slider_state: SliderState::new(map),
+        attrs: &mut attrs,
         ticks: Vec::new(),
         curve_bufs: CurveBuffers::default(),
     };
 
-    let hit_objects_iter = map
+    let mut hit_objects: Vec<_> = map
         .hit_objects
         .iter()
         .take(take)
-        .filter_map(|h| OsuObject::new(h, hr, &mut params));
-
-    let mut hit_objects = Vec::with_capacity(take.min(map.hit_objects.len()));
-    hit_objects.extend(hit_objects_iter);
+        .map(|h| OsuObject::new(h, &mut params))
+        .collect();
 
     let stack_threshold = time_preempt * map.stack_leniency as f64;
 
@@ -303,69 +291,60 @@ fn calculate_skills(params: OsuStars<'_>) -> (Skills, OsuDifficultyAttributes) {
         old_stacking(&mut hit_objects, stack_threshold);
     }
 
-    let mut hit_objects = hit_objects.into_iter().map(|mut h| {
-        let stack_offset = scaling_factor.stack_offset(h.stack_height);
-        h.pos += stack_offset;
+    let mut hit_objects = hit_objects.iter_mut().map(|h| {
+        h.post_process(hr, &scaling_factor);
 
         h
     });
 
-    let mut skills = Skills::new(hit_window, mods.rx(), scaling_factor.radius(), mods.fl());
-
-    let (mut prev, curr) = match (hit_objects.next(), hit_objects.next()) {
-        (Some(prev), Some(curr)) => (prev, curr),
-        (Some(_), None) | (None, None) => return (skills, attributes),
-        (None, Some(_)) => unreachable!(),
-    };
-
-    let mut prev_prev = None;
-
-    // First object has no predecessor and thus no strain, handle distinctly
-    let mut curr_section_end = (prev.time / clock_rate / SECTION_LEN).ceil() * SECTION_LEN;
-
-    // Handle second object separately to remove later if-branching
-    let h = DifficultyObject::new(
-        &curr,
-        &mut prev,
-        prev_prev.as_ref(),
-        &scaling_factor,
-        clock_rate,
+    let mut skills = Skills::new(
+        mods,
+        scaling_factor.radius,
+        time_preempt,
+        time_fade_in,
+        hit_window,
     );
 
-    let base_time = h.base.time / clock_rate;
+    let last = match hit_objects.next() {
+        Some(prev) => prev,
+        None => return (skills, attrs),
+    };
 
-    while base_time > curr_section_end {
-        skills.start_new_section_from(curr_section_end);
-        curr_section_end += SECTION_LEN;
-    }
+    let mut last_last = None;
 
-    skills.process(&h);
-    prev_prev = Some(mem::replace(&mut prev, curr));
+    // Prepare `lazy_travel_dist` and `lazy_end_pos` for `last` manually
+    Distances::compute_slider_cursor_pos(last, &scaling_factor);
 
-    // Handle all other objects
-    for curr in hit_objects {
-        let h = DifficultyObject::new(
-            &curr,
-            &mut prev,
-            prev_prev.as_ref(),
-            &scaling_factor,
+    let mut last = &*last;
+    let mut diff_objects = Vec::with_capacity(hit_objects.len());
+
+    for (i, curr) in hit_objects.enumerate() {
+        let delta_time = (curr.start_time - last.start_time) / clock_rate;
+
+        // * Capped to 25ms to prevent difficulty calculation breaking from simultaneous objects.
+        let strain_time = delta_time.max(OsuDifficultyObject::MIN_DELTA_TIME as f64);
+
+        let dists = Distances::new(
+            curr,
+            last,
+            last_last,
             clock_rate,
+            strain_time,
+            &scaling_factor,
         );
 
-        let base_time = h.base.time / clock_rate;
+        let diff_obj = OsuDifficultyObject::new(curr, last, clock_rate, i, dists);
+        diff_objects.push(diff_obj);
 
-        while base_time > curr_section_end {
-            skills.save_peak_and_start_new_section(curr_section_end);
-            curr_section_end += SECTION_LEN;
-        }
-
-        skills.process(&h);
-        prev_prev = Some(mem::replace(&mut prev, curr));
+        last_last = Some(last);
+        last = &*curr;
     }
 
-    skills.save_current_peak();
+    for curr in diff_objects.iter() {
+        skills.process(curr, &diff_objects);
+    }
 
-    (skills, attributes)
+    (skills, attrs)
 }
 
 fn stacking(hit_objects: &mut [OsuObject], stack_threshold: f64) {
@@ -406,7 +385,8 @@ fn stacking(hit_objects: &mut [OsuObject], stack_threshold: f64) {
 
                 if hit_objects[n].is_spinner() {
                     continue;
-                } else if hit_objects[obj_i_idx].time - hit_objects[n].end_time() > stack_threshold
+                } else if hit_objects[obj_i_idx].start_time - hit_objects[n].end_time()
+                    > stack_threshold
                 {
                     break; // * We are no longer within stacking range of the previous object.
                 }
@@ -424,8 +404,8 @@ fn stacking(hit_objects: &mut [OsuObject], stack_threshold: f64) {
                 // *         o <- hitCircle has stack of -2
                 if hit_objects[n].is_slider()
                     && hit_objects[n]
-                        .end_pos()
-                        .distance(hit_objects[obj_i_idx].pos)
+                        .pre_stacked_end_pos()
+                        .distance(hit_objects[obj_i_idx].pos())
                         < STACK_DISTANCE
                 {
                     let offset =
@@ -434,7 +414,11 @@ fn stacking(hit_objects: &mut [OsuObject], stack_threshold: f64) {
                     for j in n + 1..=i {
                         // * For each object which was declared under this slider, we will offset
                         // * it to appear *below* the slider end (rather than above).
-                        if hit_objects[n].end_pos().distance(hit_objects[j].pos) < STACK_DISTANCE {
+                        if hit_objects[n]
+                            .pre_stacked_end_pos()
+                            .distance(hit_objects[j].pos())
+                            < STACK_DISTANCE
+                        {
                             hit_objects[j].stack_height -= offset;
                         }
                     }
@@ -445,7 +429,7 @@ fn stacking(hit_objects: &mut [OsuObject], stack_threshold: f64) {
                     break;
                 }
 
-                if hit_objects[n].pos.distance(hit_objects[obj_i_idx].pos) < STACK_DISTANCE {
+                if hit_objects[n].pos().distance(hit_objects[obj_i_idx].pos()) < STACK_DISTANCE {
                     // * Keep processing as if there are no sliders.
                     // * If we come across a slider, this gets cancelled out.
                     // * NOTE: Sliders with start positions stacking
@@ -466,13 +450,15 @@ fn stacking(hit_objects: &mut [OsuObject], stack_threshold: f64) {
 
                 if hit_objects[n].is_spinner() {
                     continue;
-                } else if hit_objects[obj_i_idx].time - hit_objects[n].time > stack_threshold {
+                }
+
+                if hit_objects[obj_i_idx].start_time - hit_objects[n].start_time > stack_threshold {
                     break; // * We are no longer within stacking range of the previous object.
                 }
 
                 if hit_objects[n]
-                    .end_pos()
-                    .distance(hit_objects[obj_i_idx].pos)
+                    .pre_stacked_end_pos()
+                    .distance(hit_objects[obj_i_idx].pos())
                     < STACK_DISTANCE
                 {
                     hit_objects[n].stack_height = hit_objects[obj_i_idx].stack_height + 1.0;
@@ -490,19 +476,19 @@ fn old_stacking(hit_objects: &mut [OsuObject], stack_threshold: f64) {
         }
 
         let mut start_time = hit_objects[i].end_time();
-        let end_pos = hit_objects[i].end_pos();
+        let pos2 = hit_objects[i].old_stacking_pos2();
 
         let mut slider_stack = 0.0;
 
         for j in i + 1..hit_objects.len() {
-            if hit_objects[j].time - stack_threshold > start_time {
+            if hit_objects[j].start_time - stack_threshold > start_time {
                 break;
             }
 
-            if hit_objects[j].pos.distance(hit_objects[i].pos) < STACK_DISTANCE {
+            if hit_objects[j].pos().distance(hit_objects[i].pos()) < STACK_DISTANCE {
                 hit_objects[i].stack_height += 1.0;
                 start_time = hit_objects[j].end_time();
-            } else if hit_objects[j].pos.distance(end_pos) < STACK_DISTANCE {
+            } else if hit_objects[j].pos().distance(pos2) < STACK_DISTANCE {
                 slider_stack += 1.0;
                 hit_objects[j].stack_height -= slider_stack;
                 start_time = hit_objects[j].end_time();
@@ -511,21 +497,19 @@ fn old_stacking(hit_objects: &mut [OsuObject], stack_threshold: f64) {
     }
 }
 
-fn lerp(start: f64, end: f64, percent: f64) -> f64 {
-    start + (end - start) * percent
-}
-
 /// The result of a difficulty calculation on an osu!standard map.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct OsuDifficultyAttributes {
     /// The aim portion of the total strain.
-    pub aim_strain: f64,
+    pub aim: f64,
     /// The speed portion of the total strain.
-    pub speed_strain: f64,
+    pub speed: f64,
     /// The flashlight portion of the total strain.
-    pub flashlight_rating: f64,
+    pub flashlight: f64,
     /// The ratio of the aim strain with and without considering sliders
     pub slider_factor: f64,
+    /// The number of clickable objects weighted by difficulty.
+    pub speed_note_count: f64,
     /// The approach rate.
     pub ar: f64,
     /// The overall difficulty
@@ -567,6 +551,8 @@ pub struct OsuPerformanceAttributes {
     pub pp_flashlight: f64,
     /// The speed portion of the final pp.
     pub pp_speed: f64,
+    /// Misses including an approximated amount of slider breaks
+    pub effective_miss_count: f64,
 }
 
 impl OsuPerformanceAttributes {

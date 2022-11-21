@@ -1,4 +1,4 @@
-use std::{borrow::Cow, cmp::Ordering, convert::identity, f32::consts::PI, iter};
+use std::{borrow::Cow, cmp::Ordering, convert::identity, f64::consts::PI, iter};
 
 use crate::parse::{PathControlPoint, PathType, Pos2};
 
@@ -8,6 +8,8 @@ const CIRCULAR_ARC_TOLERANCE: f32 = 0.1;
 
 #[derive(Clone, Debug, Default)]
 pub(crate) struct CurveBuffers {
+    path: Vec<Pos2>,
+    lengths: Vec<f64>,
     vertices: Vec<Pos2>,
     bezier: BezierBuffers,
 }
@@ -50,21 +52,24 @@ struct CircularArcProperties {
     centre: Pos2,
 }
 
-pub(crate) struct Curve {
-    path: Vec<Pos2>,
-    lengths: Vec<f64>,
+pub(crate) struct Curve<'bufs> {
+    path: &'bufs [Pos2],
+    lengths: &'bufs [f64],
 }
 
-impl Curve {
+impl<'bufs> Curve<'bufs> {
     pub(crate) fn new(
         points: &[PathControlPoint],
-        expected_len: f64,
-        bufs: &mut CurveBuffers,
+        expected_len: Option<f64>,
+        bufs: &'bufs mut CurveBuffers,
     ) -> Self {
-        let mut path = Self::calculate_path(points, bufs);
-        let lengths = Self::calculate_length(points, &mut path, expected_len);
+        Self::calculate_path(points, bufs);
+        Self::calculate_length(points, bufs, expected_len);
 
-        Self { path, lengths }
+        Self {
+            path: &bufs.path,
+            lengths: &bufs.lengths,
+        }
     }
 
     pub(crate) fn position_at(&self, progress: f64) -> Pos2 {
@@ -117,17 +122,23 @@ impl Curve {
         p0 + (p1 - p0) * w as f32
     }
 
-    fn calculate_path(points: &[PathControlPoint], bufs: &mut CurveBuffers) -> Vec<Pos2> {
+    fn calculate_path(points: &[PathControlPoint], bufs: &mut CurveBuffers) {
+        bufs.path.clear();
+
         if points.is_empty() {
-            return Vec::new();
+            return;
         }
 
-        let CurveBuffers { vertices, bezier } = bufs;
+        let CurveBuffers {
+            vertices,
+            bezier,
+            path,
+            ..
+        } = bufs;
 
         vertices.clear();
         vertices.extend(points.iter().map(|p| p.pos));
 
-        let mut path = Vec::new();
         let mut start = 0;
 
         for i in 0..points.len() {
@@ -139,24 +150,29 @@ impl Curve {
             let segment_vertices = &vertices[start..i + 1];
             let segment_kind = points[start].kind.unwrap_or(PathType::Linear);
 
-            Self::calculate_subpath(&mut path, segment_vertices, segment_kind, bezier);
+            Self::calculate_subpath(path, segment_vertices, segment_kind, bezier);
 
             // * Start the new segment at the current vertex
             start = i;
         }
 
         path.dedup();
-
-        path
     }
 
     fn calculate_length(
         points: &[PathControlPoint],
-        path: &mut Vec<Pos2>,
-        expected_len: f64,
-    ) -> Vec<f64> {
+        bufs: &mut CurveBuffers,
+        expected_len: Option<f64>,
+    ) {
+        let CurveBuffers {
+            path,
+            lengths: cumulative_len,
+            ..
+        } = bufs;
+
+        cumulative_len.clear();
         let mut calculated_len = 0.0;
-        let mut cumulative_len = Vec::with_capacity(path.len());
+        cumulative_len.reserve(path.len());
         cumulative_len.push(0.0);
 
         let length_iter = path.iter().zip(path.iter().skip(1)).map(|(&curr, &next)| {
@@ -167,7 +183,7 @@ impl Curve {
 
         cumulative_len.extend(length_iter);
 
-        if (expected_len - calculated_len).abs() > f64::EPSILON {
+        if let Some(expected_len) = expected_len.filter(|&len| calculated_len != len) {
             // * In osu-stable, if the last two control points of a slider are equal, extension is not performed
             let condition_opt = points
                 .len()
@@ -178,12 +194,12 @@ impl Curve {
             if condition_opt.is_some() {
                 cumulative_len.push(calculated_len);
 
-                return cumulative_len;
+                return;
             }
 
             // Shortcut when it's just (0,0) since there's nothing to do anyway
             if cumulative_len.len() == 1 {
-                return cumulative_len;
+                return;
             }
 
             // * The last length is always incorrect
@@ -206,7 +222,7 @@ impl Curve {
                     // * Perhaps negative path lengths should be disallowed altogether
                     cumulative_len.push(0.0);
 
-                    return cumulative_len;
+                    return;
                 }
             }
 
@@ -219,8 +235,6 @@ impl Curve {
             path[end_idx] = path[prev_idx] + dir * (expected_len - cumulative_len[prev_idx]) as f32;
             cumulative_len.push(expected_len);
         }
-
-        cumulative_len
     }
 
     fn calculate_subpath(
@@ -490,8 +504,8 @@ impl Curve {
 
         let radius = d_a.length();
 
-        let theta_start = d_a.y.atan2(d_a.x);
-        let mut theta_end = d_c.y.atan2(d_c.x);
+        let theta_start = (d_a.y as f64).atan2(d_a.x as f64);
+        let mut theta_end = (d_c.y as f64).atan2(d_c.x as f64);
 
         while theta_end < theta_start {
             theta_end += 2.0 * PI;
@@ -515,8 +529,8 @@ impl Curve {
         }
 
         Some(CircularArcProperties {
-            theta_start: theta_start as f64,
-            theta_range: theta_range as f64,
+            theta_start,
+            theta_range,
             direction,
             radius,
             centre,

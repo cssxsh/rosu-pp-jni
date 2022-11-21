@@ -1,9 +1,12 @@
 use crate::{
-    beatmap::converts::mania::{
-        legacy_random::Random, pattern::Pattern, pattern_type::PatternType,
+    beatmap::{
+        converts::mania::{legacy_random::Random, pattern::Pattern, pattern_type::PatternType},
+        EffectPoint,
     },
     curve::Curve,
+    mania::ManiaObject,
     parse::{HitObject, HitSound},
+    util::FloatExt,
     Beatmap,
 };
 
@@ -34,7 +37,7 @@ impl<'h> DistanceObjectPatternGenerator<'h> {
         prev_pattern: &'h Pattern,
         orig: &'h Beatmap,
         repeats: usize,
-        curve: &Curve,
+        curve: &Curve<'_>,
         edge_sounds: &'h [u8],
     ) -> Self {
         let timing_point = orig.timing_point_at(hit_object.start_time);
@@ -43,11 +46,9 @@ impl<'h> DistanceObjectPatternGenerator<'h> {
             .difficulty_point_at(hit_object.start_time)
             .unwrap_or_default();
 
-        let kiai = if timing_point.time < difficulty_point.time {
-            difficulty_point.kiai
-        } else {
-            timing_point.kiai
-        };
+        let kiai = orig
+            .effect_point_at(hit_object.start_time)
+            .map_or(EffectPoint::DEFAULT_KIAI, |point| point.kiai);
 
         let convert_type = if kiai {
             PatternType::default()
@@ -55,10 +56,10 @@ impl<'h> DistanceObjectPatternGenerator<'h> {
             PatternType::LOW_PROBABILITY
         };
 
-        let beat_len = timing_point.beat_len / difficulty_point.speed_multiplier;
+        let beat_len = timing_point.beat_len * difficulty_point.bpm_mult;
 
         let span_count = (repeats + 1) as i32;
-        let start_time = hit_object.start_time.round() as i32;
+        let start_time = hit_object.start_time.round_even() as i32;
 
         // * This matches stable's calculation.
         let end_time = (start_time as f64
@@ -97,12 +98,12 @@ impl<'h> DistanceObjectPatternGenerator<'h> {
         let mut end_time_pattern = Pattern::default();
 
         for obj in orig_pattern.hit_objects {
-            let column = obj.column(self.total_columns as f32);
+            let col = ManiaObject::column(obj.pos.x, self.total_columns as f32) as u8;
 
-            if self.end_time != obj.end_time().round() as i32 {
-                intermediate_pattern.add_object(obj, column);
+            if self.end_time != obj.end_time().round_even() as i32 {
+                intermediate_pattern.add_object(obj, col);
             } else {
-                end_time_pattern.add_object(obj, column);
+                end_time_pattern.add_object(obj, col);
             }
         }
 

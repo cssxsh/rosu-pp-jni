@@ -5,7 +5,6 @@ mod gradual_difficulty;
 mod gradual_performance;
 mod movement;
 mod pp;
-mod slider_state;
 
 use catch_object::CatchObject;
 use difficulty_object::DifficultyObject;
@@ -14,7 +13,6 @@ pub use gradual_difficulty::*;
 pub use gradual_performance::*;
 use movement::Movement;
 pub use pp::*;
-use slider_state::SliderState;
 
 use crate::{catch::fruit_or_juice::FruitParams, curve::CurveBuffers, Beatmap, Mods, OsuStars};
 
@@ -109,11 +107,10 @@ impl<'map> CatchStars<'map> {
     /// Suitable to plot the difficulty of a map over time.
     #[inline]
     pub fn strains(self) -> CatchStrains {
-        let clock_rate = self.clock_rate.unwrap_or_else(|| self.mods.clock_rate());
         let (movement, _) = calculate_movement(self);
 
         CatchStrains {
-            section_len: SECTION_LENGTH * clock_rate,
+            section_len: SECTION_LENGTH,
             movement: movement.strain_peaks,
         }
     }
@@ -161,7 +158,6 @@ fn calculate_movement(params: CatchStars<'_>) -> (Movement, CatchDifficultyAttri
         last_pos: None,
         last_time: 0.0,
         map,
-        slider_state: SliderState::new(map),
         ticks: Vec::new(), // using the same buffer for all sliders
         with_hr: mods.hr(),
     };

@@ -2,7 +2,55 @@
 
 Nothing as of now
 
-# v0.8.0 (2022-08-02)
+# v0.9.2 (2022-11-08)
+
+- __Adjustments:__
+  - When passing an osu!std map to `TaikoGradualDifficultyAttributes` or `ManiaGradualDifficultyAttributes`, it now automatically converts the map internally. For osu!catch is was already happening trivially.
+
+- __Fixes:__
+  - Fixed passed object count for taiko by ignoring non-circles
+  - Fixed a niche panic on UTF-16 encoded maps ([#18])
+  - Fixed an occasional underflow when calculating accuracy pp
+  - Fixed an infinite loop on special ctb maps
+
+## v0.9.1 (2022-10-26)
+
+- __Adjustments:__
+  - When passing an osu!std map to `TaikoPP` or `ManiaPP`, it now automatically converts the map internally. For osu!catch it was already happening trivially.
+
+- __Fixes:__
+  - The fields `section_len` for all strain structs no longer depends on the clock rate.
+
+## v0.9.0 (2022-10-24)
+
+Big changes including the most recent [osu!](https://osu.ppy.sh/home/news/2022-09-30-changes-to-osu-sr-and-pp), [taiko](https://osu.ppy.sh/home/news/2022-09-28-changes-to-osu-taiko-sr-and-pp), and [mania](https://osu.ppy.sh/home/news/2022-10-09-changes-to-osu-mania-sr-and-pp) updates, aswell as various breaking changes.
+
+- __Breaking changes:__
+  - `TimingPoint` and `DifficultyPoint` no longer contain a `kiai` field
+  - `DifficultyPoint` now has the additional fields `bpm_mult` and `generate_ticks`
+  - `Beatmap` now stores timing- and difficulty points in a `SortedVec`
+  - `Beatmap` now has the additional field `effect_points`
+  - For the performance calculators `OsuPP`, `TaikoPP`, `ManiaPP`, and `AnyPP` the method `misses` has been renamed to `n_misses`
+  - The accuracy method for `OsuPP`, `TaikoPP`, and `ManiaPP` is no longer required to be called last
+  - `ManiaPP` no longer has a `score` method. Instead it has `n320`, `n300`. `n200`, `n100`, `n50`, and `n_misses` methods, aswell as a `state` method
+  - Gradual performance calculation for mania now requires a `ManiaScoreState` instead of `score`
+  - `ManiaDifficultyAttributes` now have a `max_combo` field and method
+  - `OsuDifficultyAttributes` now have a `speed_note_count` field
+  - `OsuPerformanceAttributes` and `TaikoPerformanceAttributes` now have a `effective_miss_count` field
+  - `TaikoDifficultyAttributes` now have a `peak` and `hit_window` field
+  - Some other things I likely forgot about :S
+
+- __Additions:__
+  - The performance calculators `OsuPP`, `TaikoPP`, `ManiaPP`, and `AnyPP` now have a `hitresult_priority` method to specify how hitresults should be generated
+
+- __Fixes:__
+  - Fixed a bunch of fringe yet significant bugs for taiko and mania converts
+  - Fixed various floating point inaccuracies for osu!standard
+  - Fixed parsing difficulty points from .osu files
+  - Instead of throwing an error, invalid lines during parsing will just be ignored in some cases
+  - Fixed an unsafe transmute between incompatible types while parsing sliders
+
+## v0.8.0 (2022-08-02)
 
 - __Fixes:__
   - Fixed stack overflow bug when allocating ticks for some sliders on converted catch maps ([#14])
@@ -172,3 +220,4 @@ Nothing as of now
 [#9]: https://github.com/MaxOhn/rosu-pp/pull/9
 [#14]: https://github.com/MaxOhn/rosu-pp/pull/14
 [#15]: https://github.com/MaxOhn/rosu-pp/pull/15
+[#18]: https://github.com/MaxOhn/rosu-pp/pull/18

@@ -19,7 +19,7 @@ impl HitObject {
     #[inline]
     pub fn end_time(&self) -> f64 {
         match &self.kind {
-            HitObjectKind::Circle { .. } => self.start_time,
+            HitObjectKind::Circle => self.start_time,
             // incorrect, only called in mania which has no sliders though
             HitObjectKind::Slider { .. } => self.start_time,
             HitObjectKind::Spinner { end_time } => *end_time,
@@ -30,7 +30,7 @@ impl HitObject {
     /// If the object is a circle.
     #[inline]
     pub fn is_circle(&self) -> bool {
-        matches!(self.kind, HitObjectKind::Circle { .. })
+        matches!(self.kind, HitObjectKind::Circle)
     }
 
     /// If the object is a slider.
@@ -43,14 +43,6 @@ impl HitObject {
     #[inline]
     pub fn is_spinner(&self) -> bool {
         matches!(self.kind, HitObjectKind::Spinner { .. })
-    }
-
-    /// The column of this node for osu!mania
-    #[inline]
-    pub fn column(&self, total_columns: f32) -> u8 {
-        let x_divisor = 512.0 / total_columns;
-
-        (self.pos.x / x_divisor).floor().min(total_columns - 1.0) as u8
     }
 }
 
@@ -69,7 +61,7 @@ pub enum HitObjectKind {
     /// A full slider object.
     Slider {
         /// Total length of the slider in pixels.
-        pixel_len: f64,
+        pixel_len: Option<f64>,
         /// The amount of repeat points of the slider.
         repeats: usize,
         /// The control points of the slider.

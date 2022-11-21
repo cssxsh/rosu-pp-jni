@@ -2,8 +2,8 @@ use std::cmp::Ordering;
 
 use crate::{
     curve::{Curve, CurveBuffers},
-    limited_queue::LimitedQueue,
     parse::{legacy_sort, HitObjectKind, Pos2},
+    util::{FloatExt, LimitedQueue},
     Beatmap, GameMode,
 };
 
@@ -17,7 +17,6 @@ use self::{
     pattern_type::PatternType,
 };
 
-mod byte_hasher;
 mod legacy_random;
 mod pattern;
 mod pattern_generator;
@@ -32,12 +31,14 @@ impl Beatmap {
         let mut n_circles = 0;
         let mut n_sliders = 0;
 
-        let seed =
-            (map.hp + map.cs).round() as i32 * 20 + (map.od * 41.2) as i32 + map.ar.round() as i32;
+        let seed = (map.hp + map.cs).round_even() as i32 * 20
+            + (map.od * 41.2) as i32
+            + map.ar.round_even() as i32;
+
         let mut random = Random::new(seed);
 
-        let rounded_cs = map.cs.round();
-        let rounded_od = map.od.round();
+        let rounded_cs = map.cs.round_even();
+        let rounded_od = map.od.round_even();
 
         let slider_or_spinner_count = self
             .hit_objects
@@ -51,13 +52,13 @@ impl Beatmap {
             .count();
 
         let percent_slider_or_spinner =
-            slider_or_spinner_count as f32 / self.hit_objects.len() as f32;
+            (slider_or_spinner_count as f32 / self.hit_objects.len() as f32) as f64;
 
         let target_columns = if percent_slider_or_spinner < 0.2 {
             7.0
         } else if percent_slider_or_spinner < 0.3 || rounded_cs >= 5.0 {
             (6 + (rounded_od > 5.0) as u8) as f32
-        } else if percent_slider_or_spinner > 0.6 {
+        } else if percent_slider_or_spinner as f64 > 0.6 {
             (4 + (rounded_od > 4.0) as u8) as f32
         } else {
             (rounded_od + 1.0).clamp(4.0, 7.0)
@@ -78,9 +79,7 @@ impl Beatmap {
         };
 
         let total_columns = map.cs as i32;
-
         let mut last_values = PrevValues::default();
-
         let mut curve_bufs = CurveBuffers::default();
 
         for (obj, sound) in self.hit_objects.iter().zip(self.sounds.iter()) {
@@ -104,8 +103,8 @@ impl Beatmap {
                     last_values.time = obj.start_time;
                     last_values.pos = obj.pos;
 
-                    map.hit_objects
-                        .extend(new_pattern.hit_objects.iter().cloned());
+                    let new_hit_objects = new_pattern.hit_objects.iter().cloned();
+                    map.hit_objects.extend(new_hit_objects);
 
                     n_circles += new_pattern.hit_objects.len();
                     last_values.pattern = new_pattern;
@@ -167,8 +166,8 @@ impl Beatmap {
                         &last_values.pattern,
                     );
 
-                    last_values.time = obj.start_time;
-                    last_values.pos = obj.pos;
+                    last_values.time = end_time;
+                    last_values.pos = Pos2 { x: 256.0, y: 192.0 };
 
                     compute_density(end_time, &mut density);
 
