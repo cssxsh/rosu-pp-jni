@@ -130,9 +130,9 @@ pub extern "system" fn Java_me_stageguard_obms_osu_algorithm_ppnative_PPCalculat
     buffer.put_f64(cloned_attributes.od);
     buffer.put_f64(cloned_attributes.hp);
     buffer.put_f64(0.0);
-    buffer.put_f64(cloned_attributes.aim_strain);
+    buffer.put_f64(cloned_attributes.aim);
     buffer.put_f64(cloned_attributes.slider_factor);
-    buffer.put_f64(cloned_attributes.speed_strain);
+    buffer.put_f64(cloned_attributes.speed);
     buffer.put_i32(cloned_attributes.max_combo as i32);
     buffer.put_i32(cloned_attributes.n_circles as i32);
     buffer.put_i32(cloned_attributes.n_sliders as i32);
