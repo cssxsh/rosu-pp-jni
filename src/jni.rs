@@ -117,13 +117,16 @@ pub extern "system" fn Java_me_stageguard_obms_osu_algorithm_ppnative_PPCalculat
     let cloned_attributes = result.clone().attributes().unwrap();
     let leaked = Box::leak(Box::new(result));
 
-    let mut buffer: Vec<u8> = Vec::with_capacity(size_of::<jlong>() + size_of::<jdouble>() * 12 + size_of::<jint>() * 3);
+    let mut buffer: Vec<u8> = Vec::with_capacity(
+        size_of::<jlong>() + size_of::<jdouble>() * 13 + size_of::<jint>() * 3
+    );
 
     buffer.put_i64(leaked as *const _ as i64);
     buffer.put_f64(leaked.pp);
     buffer.put_f64(leaked.pp_aim);
     buffer.put_f64(leaked.pp_speed);
     buffer.put_f64(leaked.pp_acc);
+    buffer.put_f64(leaked.pp_flashlight);
 
     buffer.put_f64(cloned_attributes.stars);
     buffer.put_f64(cloned_attributes.ar);
