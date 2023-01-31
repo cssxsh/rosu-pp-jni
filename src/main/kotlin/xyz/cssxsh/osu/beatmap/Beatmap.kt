@@ -2,13 +2,14 @@ package xyz.cssxsh.osu.beatmap
 
 import xyz.cssxsh.osu.GameMode
 import xyz.cssxsh.osu.Library
+import xyz.cssxsh.osu.PRETTY_PRINT_KEY
 
 /**
  * [Beatmap](https://osu.ppy.sh/wiki/en/Beatmap) bind
  *
  * @param ptr 指针
  */
-public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) {
+public class Beatmap internal constructor(@PublishedApi internal val ptr: Long): Cloneable {
 
     /**
      * @param bytes data of file
@@ -20,7 +21,14 @@ public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) 
      */
     public constructor(path: String) : this(ptr = create(path))
 
+    /**
+     * default
+     */
+    public constructor() : this(ptr = default())
+
     protected fun finalize(): Unit = destroy(ptr = ptr)
+
+    override fun clone(): Beatmap = Beatmap(ptr = clone(ptr = ptr))
 
     /**
      * [Game Mode](https://osu.ppy.sh/wiki/en/Ranking_Criteria)
@@ -107,9 +115,7 @@ public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) 
             }
         })
 
-    override fun toString(): String {
-        return "Beatmap(version=${version}, mode=${mode}, ar=${ar}, od=${od}, cs=${cs}, hp=${hp})"
-    }
+    override fun toString(): String = debug(ptr = ptr, pretty = java.lang.Boolean.getBoolean(PRETTY_PRINT_KEY))
 
     public companion object {
         init {
@@ -120,7 +126,13 @@ public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) 
 
         internal external fun create(path: String): Long
 
+        internal external fun default(): Long
+
+        internal external fun clone(ptr: Long): Long
+
         internal external fun destroy(ptr: Long)
+
+        internal external fun debug(ptr: Long, pretty: Boolean): String
 
         internal external fun getMode(ptr: Long): Int
 

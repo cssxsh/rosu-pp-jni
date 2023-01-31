@@ -45,6 +45,35 @@ pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_create
 
 /*
  * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
+ * Method:    default_00024rosu_pp_jni
+ * Signature: ()J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_default_00024rosu_1pp_1jni(
+    _env: JNIEnv, _this: jclass,
+) -> jlong {
+    let beatmap = Beatmap::default();
+    Box::into_raw(Box::new(beatmap)) as _
+}
+
+/*
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
+ * Method:    clone_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_clone_00024rosu_1pp_1jni(
+    _env: JNIEnv, _this: jclass, ptr: jlong,
+) -> jlong {
+    let beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
+    let other = beatmap.clone();
+
+    Box::into_raw(beatmap);
+    Box::into_raw(other) as _
+}
+
+/*
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    destroy_00024rosu_pp_jni
  * Signature: (J)J
  */
@@ -53,6 +82,31 @@ pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_destro
     _env: JNIEnv, _this: jclass, ptr: jlong,
 ) {
     unsafe { Box::<Beatmap>::from_raw(ptr as _) };
+}
+
+/*
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
+ * Method:    debug_00024rosu_pp_jni
+ * Signature: ()Ljava/lang/String;
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_debug_00024rosu_1pp_1jni(
+    _env: JNIEnv, _this: jclass, ptr: jlong, pretty: jboolean
+) -> jstring {
+    let beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
+
+    let info = if pretty != 0 {
+        format!("{beatmap:#?}")
+    } else {
+        format!("{beatmap:?}")
+    };
+
+    let binding = _env.new_string(info)
+        .unwrap_or_else(|error| _env.fatal_error(error.to_string()));
+
+    Box::into_raw(beatmap);
+
+    binding.into_raw()
 }
 
 /*
