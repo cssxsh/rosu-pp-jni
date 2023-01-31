@@ -5,12 +5,12 @@ use jni::sys::*;
 use rosu_pp::*;
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    create_00024rosu_pp_jni
  * Signature: ([B)J
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_create_00024rosu_1pp_1jni___3B(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_create_00024rosu_1pp_1jni___3B(
     _env: JNIEnv, _this: jclass, byte_array: jbyteArray,
 ) -> jlong {
     let bytes = _env.convert_byte_array(byte_array)
@@ -18,17 +18,17 @@ pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_create_00
 
     let beatmap = Beatmap::from_bytes(bytes.as_slice())
         .unwrap_or_else(|error| _env.fatal_error(error.to_string()));
-    beatmap
+
     Box::into_raw(Box::new(beatmap)) as _
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    create_00024rosu_pp_jni
  * Signature: (Ljava/lang/String;)J
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_create_00024rosu_1pp_1jni__Ljava_lang_String_2(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_create_00024rosu_1pp_1jni__Ljava_lang_String_2(
     _env: JNIEnv, _this: jclass, path_str: JString,
 ) -> jlong {
     let binding = _env.get_string(path_str)
@@ -44,24 +44,24 @@ pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_create_00
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    destroy_00024rosu_pp_jni
  * Signature: (J)J
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_destroy_00024rosu_1pp_1jni(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_destroy_00024rosu_1pp_1jni(
     _env: JNIEnv, _this: jclass, ptr: jlong,
 ) {
     unsafe { Box::<Beatmap>::from_raw(ptr as _) };
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    getMode_00024rosu_pp_jni
  * Signature: (J)I
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_getMode_00024rosu_1pp_1jni(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_getMode_00024rosu_1pp_1jni(
     _env: JNIEnv, _this: jclass, ptr: jlong,
 ) -> jint {
     let beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
@@ -72,12 +72,12 @@ pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_getMode_0
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    setMode_00024rosu_pp_jni
  * Signature: (JI)V
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_setMode_00024rosu_1pp_1jni(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_setMode_00024rosu_1pp_1jni(
     _env: JNIEnv, _this: jclass, ptr: jlong, index: jint,
 ) {
     let mut beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
@@ -94,12 +94,12 @@ pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_setMode_0
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    getVersion_00024rosu_pp_jni
  * Signature: (J)I
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_getVersion_00024rosu_1pp_1jni(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_getVersion_00024rosu_1pp_1jni(
     _env: JNIEnv, _this: jclass, ptr: jlong,
 ) -> jint {
     let beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
@@ -110,12 +110,12 @@ pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_getVersio
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    setVersion_00024rosu_pp_jni
  * Signature: (JI)V
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_setVersion_00024rosu_1pp_1jni(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_setVersion_00024rosu_1pp_1jni(
     _env: JNIEnv, _this: jclass, ptr: jlong, version: jint,
 ) {
     let mut beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
@@ -126,12 +126,108 @@ pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_setVersio
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
+ * Method:    getNCircles_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_getNCircles_00024rosu_1pp_1jni(
+    _env: JNIEnv, _this: jclass, ptr: jlong,
+) -> jlong {
+    let beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
+    let n_circles = beatmap.n_circles;
+
+    Box::into_raw(beatmap);
+    n_circles as _
+}
+
+/*
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
+ * Method:    setNCircles_00024rosu_pp_jni
+ * Signature: (JJ)V
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_setNCircles_00024rosu_1pp_1jni(
+    _env: JNIEnv, _this: jclass, ptr: jlong, number: jlong,
+) {
+    let mut beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
+
+    beatmap.n_circles = number as _;
+
+    Box::into_raw(beatmap);
+}
+
+/*
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
+ * Method:    getNSliders_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_getNSliders_00024rosu_1pp_1jni(
+    _env: JNIEnv, _this: jclass, ptr: jlong,
+) -> jlong {
+    let beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
+    let n_sliders = beatmap.n_sliders;
+
+    Box::into_raw(beatmap);
+    n_sliders as _
+}
+
+/*
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
+ * Method:    setNSliders_00024rosu_pp_jni
+ * Signature: (JJ)V
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_setNSliders_00024rosu_1pp_1jni(
+    _env: JNIEnv, _this: jclass, ptr: jlong, number: jlong,
+) {
+    let mut beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
+
+    beatmap.n_sliders = number as _;
+
+    Box::into_raw(beatmap);
+}
+
+/*
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
+ * Method:    getNSpinners_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_getNSpinners_00024rosu_1pp_1jni(
+    _env: JNIEnv, _this: jclass, ptr: jlong,
+) -> jlong {
+    let beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
+    let n_spinners = beatmap.n_spinners;
+
+    Box::into_raw(beatmap);
+    n_spinners as _
+}
+
+/*
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
+ * Method:    setNSpinners_00024rosu_pp_jni
+ * Signature: (JJ)V
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_setNSpinners_00024rosu_1pp_1jni(
+    _env: JNIEnv, _this: jclass, ptr: jlong, number: jlong,
+) {
+    let mut beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
+
+    beatmap.n_spinners = number as _;
+
+    Box::into_raw(beatmap);
+}
+
+/*
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    getAR_00024rosu_pp_jni
  * Signature: (J)F
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_getAR_00024rosu_1pp_1jni(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_getAR_00024rosu_1pp_1jni(
     _env: JNIEnv, _this: jclass, ptr: jlong,
 ) -> jfloat {
     let beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
@@ -142,12 +238,12 @@ pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_getAR_000
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    setAR_00024rosu_pp_jni
  * Signature: (JF)V
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_setAR_00024rosu_1pp_1jni(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_setAR_00024rosu_1pp_1jni(
     _env: JNIEnv, _this: jclass, ptr: jlong, ar: jint,
 ) {
     let mut beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
@@ -158,12 +254,12 @@ pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_setAR_000
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    getOD_00024rosu_pp_jni
  * Signature: (J)F
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_getOD_00024rosu_1pp_1jni(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_getOD_00024rosu_1pp_1jni(
     _env: JNIEnv, _this: jclass, ptr: jlong,
 ) -> jfloat {
     let beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
@@ -174,12 +270,12 @@ pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_getOD_000
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    setOD_00024rosu_pp_jni
  * Signature: (JF)V
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_setOD_00024rosu_1pp_1jni(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_setOD_00024rosu_1pp_1jni(
     _env: JNIEnv, _this: jclass, ptr: jlong, od: jint,
 ) {
     let mut beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
@@ -190,12 +286,12 @@ pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_setOD_000
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    getCS_00024rosu_pp_jni
  * Signature: (J)F
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_getCS_00024rosu_1pp_1jni(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_getCS_00024rosu_1pp_1jni(
     _env: JNIEnv, _this: jclass, ptr: jlong,
 ) -> jfloat {
     let beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
@@ -206,12 +302,12 @@ pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_getCS_000
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    setCS_00024rosu_pp_jni
  * Signature: (JF)V
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_setCS_00024rosu_1pp_1jni(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_setCS_00024rosu_1pp_1jni(
     _env: JNIEnv, _this: jclass, ptr: jlong, cs: jint,
 ) {
     let mut beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
@@ -222,12 +318,12 @@ pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_setCS_000
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    getHP_00024rosu_pp_jni
  * Signature: (J)F
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_getHP_00024rosu_1pp_1jni(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_getHP_00024rosu_1pp_1jni(
     _env: JNIEnv, _this: jclass, ptr: jlong,
 ) -> jfloat {
     let beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };
@@ -238,12 +334,12 @@ pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_getHP_000
 }
 
 /*
- * Class:     xyz_cssxsh_osu_rust_Beatmap__Companion
+ * Class:     xyz_cssxsh_osu_beatmap_Beatmap__Companion
  * Method:    setHP_00024rosu_pp_jni
  * Signature: (JF)V
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_osu_rust_Beatmap_00024Companion_setHP_00024rosu_1pp_1jni(
+pub extern "system" fn Java_xyz_cssxsh_osu_beatmap_Beatmap_00024Companion_setHP_00024rosu_1pp_1jni(
     _env: JNIEnv, _this: jclass, ptr: jlong, hp: jint,
 ) {
     let mut beatmap = unsafe { Box::<Beatmap>::from_raw(ptr as _) };

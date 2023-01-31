@@ -1,5 +1,6 @@
-package xyz.cssxsh.osu.rust
+package xyz.cssxsh.osu
 
+import xyz.cssxsh.osu.beatmap.Beatmap
 import java.io.File
 import kotlin.test.*
 
@@ -10,6 +11,9 @@ internal class BeatmapTest {
             GameMode.Osu -> {
                 assertEquals(GameMode.Osu, map.mode)
                 assertEquals(14, map.version)
+                assertEquals(307, map.circles)
+                assertEquals(293, map.sliders)
+                assertEquals(1, map.spinners)
                 assertEquals(9.3F, map.ar)
                 assertEquals(8.8F, map.od)
                 assertEquals(4.5F, map.cs)
@@ -18,6 +22,9 @@ internal class BeatmapTest {
             GameMode.Taiko -> {
                 assertEquals(GameMode.Taiko, map.mode)
                 assertEquals(14, map.version)
+                assertEquals(289, map.circles)
+                assertEquals(4, map.sliders)
+                assertEquals(2, map.spinners)
                 assertEquals(8.0F, map.ar)
                 assertEquals(5.0F, map.od)
                 assertEquals(2.0F, map.cs)
@@ -26,6 +33,9 @@ internal class BeatmapTest {
             GameMode.Catch -> {
                 assertEquals(GameMode.Catch, map.mode)
                 assertEquals(14, map.version)
+                assertEquals(249, map.circles)
+                assertEquals(227, map.sliders)
+                assertEquals(1, map.spinners)
                 assertEquals(8.0F, map.ar)
                 assertEquals(8.0F, map.od)
                 assertEquals(3.5F, map.cs)
@@ -34,6 +44,9 @@ internal class BeatmapTest {
             GameMode.Mania -> {
                 assertEquals(GameMode.Mania, map.mode)
                 assertEquals(14, map.version)
+                assertEquals(2815, map.circles)
+                assertEquals(423, map.sliders)
+                assertEquals(0, map.spinners)
                 assertEquals(5.0F, map.ar)
                 assertEquals(8.0F, map.od)
                 assertEquals(4.0F, map.cs)

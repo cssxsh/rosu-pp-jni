@@ -1,4 +1,7 @@
-package xyz.cssxsh.osu.rust
+package xyz.cssxsh.osu.beatmap
+
+import xyz.cssxsh.osu.GameMode
+import xyz.cssxsh.osu.Library
 
 /**
  * [Beatmap](https://osu.ppy.sh/wiki/en/Beatmap) bind
@@ -10,12 +13,12 @@ public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) 
     /**
      * @param bytes data of file
      */
-    public constructor(bytes: ByteArray): this(ptr = create(bytes))
+    public constructor(bytes: ByteArray) : this(ptr = create(bytes))
 
     /**
      * @param path path of file
      */
-    public constructor(path: String): this(ptr = create(path))
+    public constructor(path: String) : this(ptr = create(path))
 
     protected fun finalize(): Unit = destroy(ptr = ptr)
 
@@ -32,6 +35,18 @@ public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) 
     public var version: Int
         get() = getVersion(ptr = ptr)
         set(value) = setVersion(ptr = ptr, version = value)
+
+    public var circles: Long
+        get() = getNCircles(ptr = ptr)
+        set(value) = setNCircles(ptr = ptr, number = value)
+
+    public var sliders: Long
+        get() = getNSliders(ptr = ptr)
+        set(value) = setNSliders(ptr = ptr, number = value)
+
+    public var spinners: Long
+        get() = getNSpinners(ptr = ptr)
+        set(value) = setNSpinners(ptr = ptr, number = value)
 
     /**
      * [Approach Rate](https://osu.ppy.sh/wiki/en/Beatmap/Approach_rate)
@@ -61,9 +76,36 @@ public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) 
         get() = getHP(ptr = ptr)
         set(value) = setHP(ptr = ptr, hp = value)
 
+    public var slider_mult: Double = 0.0
+
+    public var tick_rate: Double = 0.0
+
+    public var hit_objects: Double = 0.0
+
+    public var sounds: Double = 0.0
+
+    public var timing_points: Double = 0.0
+
+    public var difficulty_points: Double = 0.0
+
+    public var effect_points: Double = 0.0
+
+    public var stack_leniency: Double = 0.0
+
     public var breaks: List<Break>
-        get() = TODO()
-        set(value) = TODO()
+        get() = buildList {
+            val array = getBreaks(ptr = ptr)
+            for (index in array.indices step 2) {
+                Break(startTime = array[index], endTime = array[index + 1])
+            }
+        }
+        set(value) = setBreaks(ptr = ptr, breaks = DoubleArray(value.size * 2).apply {
+            var index = 0
+            for (item in breaks) {
+                set(index++, item.startTime)
+                set(index++, item.endTime)
+            }
+        })
 
     override fun toString(): String {
         return "Beatmap(version=${version}, mode=${mode}, ar=${ar}, od=${od}, cs=${cs}, hp=${hp})"
@@ -88,6 +130,18 @@ public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) 
 
         internal external fun setVersion(ptr: Long, version: Int)
 
+        internal external fun getNCircles(ptr: Long): Long
+
+        internal external fun setNCircles(ptr: Long, number: Long)
+
+        internal external fun getNSliders(ptr: Long): Long
+
+        internal external fun setNSliders(ptr: Long, number: Long)
+
+        internal external fun getNSpinners(ptr: Long): Long
+
+        internal external fun setNSpinners(ptr: Long, number: Long)
+
         internal external fun getAR(ptr: Long): Float
 
         internal external fun setAR(ptr: Long, ar: Float)
@@ -103,5 +157,9 @@ public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) 
         internal external fun getHP(ptr: Long): Float
 
         internal external fun setHP(ptr: Long, hp: Float)
+
+        internal external fun getBreaks(ptr: Long): DoubleArray
+
+        internal external fun setBreaks(ptr: Long, breaks: DoubleArray)
     }
 }
