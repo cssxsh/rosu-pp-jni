@@ -1,16 +1,10 @@
-name: Clippy and Tests
+name: Build and Upload
 
-on:
-  push:
-    branches:
-      - main
-      - next
-    pull_request:
+on: [ push, pull_request ]
 
 jobs:
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
+  windows-build:
+    runs-on: windows-latest
 
     strategy:
       matrix:
@@ -34,9 +28,15 @@ jobs:
           command: clippy
           args: --no-default-features --features ${{ matrix.feature }}
 
-  tests:
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --no-default-features --features ${{ matrix.feature }}
+
+  linux-build:
     name: Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     strategy:
       matrix:
@@ -53,6 +53,12 @@ jobs:
           toolchain: stable
           components: clippy
           override: true
+
+      - name: Run clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --no-default-features --features ${{ matrix.feature }}
 
       - name: Run tests
         uses: actions-rs/cargo@v1
