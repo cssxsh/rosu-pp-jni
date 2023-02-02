@@ -1,6 +1,6 @@
-package xyz.cssxsh.osu
+package xyz.cssxsh.rosu
 
-import xyz.cssxsh.osu.beatmap.Beatmap
+import xyz.cssxsh.rosu.beatmap.Beatmap
 import java.io.File
 import kotlin.test.*
 
@@ -18,6 +18,14 @@ internal class BeatmapTest {
                 assertEquals(8.8F, map.od)
                 assertEquals(4.5F, map.cs)
                 assertEquals(5.0F, map.hp)
+                assertEquals(1.7, map.sliderMultiplier)
+                assertEquals(1.0, map.sliderTickRate)
+                assertEquals(601, map.sounds.limit())
+                assertEquals(1, map.timingPoints.size)
+                assertEquals(50, map.difficultyPoints.size)
+                assertEquals(131, map.effectPoints.size)
+                assertEquals(0.5F, map.stackLeniency)
+                assertEquals(1, map.breaks.size)
             }
             GameMode.Taiko -> {
                 assertEquals(GameMode.Taiko, map.mode)
@@ -29,6 +37,14 @@ internal class BeatmapTest {
                 assertEquals(5.0F, map.od)
                 assertEquals(2.0F, map.cs)
                 assertEquals(6.0F, map.hp)
+                assertEquals(1.4, map.sliderMultiplier)
+                assertEquals(1.0, map.sliderTickRate)
+                assertEquals(295, map.sounds.limit())
+                assertEquals(1, map.timingPoints.size)
+                assertEquals(3, map.difficultyPoints.size)
+                assertEquals(8, map.effectPoints.size)
+                assertEquals(0.7F, map.stackLeniency)
+                assertEquals(0, map.breaks.size)
             }
             GameMode.Catch -> {
                 assertEquals(GameMode.Catch, map.mode)
@@ -40,6 +56,14 @@ internal class BeatmapTest {
                 assertEquals(8.0F, map.od)
                 assertEquals(3.5F, map.cs)
                 assertEquals(5.0F, map.hp)
+                assertEquals(1.45, map.sliderMultiplier)
+                assertEquals(1.0, map.sliderTickRate)
+                assertEquals(477, map.sounds.limit())
+                assertEquals(1, map.timingPoints.size)
+                assertEquals(0, map.difficultyPoints.size)
+                assertEquals(57, map.effectPoints.size)
+                assertEquals(0.7F, map.stackLeniency)
+                assertEquals(0, map.breaks.size)
             }
             GameMode.Mania -> {
                 assertEquals(GameMode.Mania, map.mode)
@@ -51,6 +75,14 @@ internal class BeatmapTest {
                 assertEquals(8.0F, map.od)
                 assertEquals(4.0F, map.cs)
                 assertEquals(9.0F, map.hp)
+                assertEquals(1.4, map.sliderMultiplier)
+                assertEquals(1.0, map.sliderTickRate)
+                assertEquals(3238, map.sounds.limit())
+                assertEquals(1, map.timingPoints.size)
+                assertEquals(1740, map.difficultyPoints.size)
+                assertEquals(1762, map.effectPoints.size)
+                assertEquals(0.7F, map.stackLeniency)
+                assertEquals(0, map.breaks.size)
             }
         }
     }

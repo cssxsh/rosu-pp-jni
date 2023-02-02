@@ -1,4 +1,4 @@
-package xyz.cssxsh.osu
+package xyz.cssxsh.rosu
 
 /**
  * [Ranking Criteria](https://osu.ppy.sh/wiki/en/Ranking_Criteria)

@@ -1,4 +1,4 @@
-package xyz.cssxsh.osu
+package xyz.cssxsh.rosu
 
 import java.io.*
 import java.nio.file.*
