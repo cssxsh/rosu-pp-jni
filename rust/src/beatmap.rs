@@ -20,7 +20,6 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_beatmap_Beatmap_create_00024rosu_1pp
     let beatmap = Beatmap::from_bytes(bytes.as_slice())
         .unwrap_or_else(|error| _env.fatal_error(error.to_string()));
 
-    AnyPP::new(beatmap)
     Box::into_raw(Box::new(beatmap))
 }
 
