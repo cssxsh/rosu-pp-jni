@@ -38,9 +38,9 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_CatchPP_clone_00024rosu_1pp_1jni<'jv
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_CatchPP_destroy_00024rosu_1pp_1jni<'jvm>(
-    _env: JNIEnv<'jvm>, _this: jclass, pp: &CatchPP<'jvm>,
+    _env: JNIEnv<'jvm>, _this: jclass, pp: *mut CatchPP<'jvm>,
 ) {
-    pp;
+    drop(unsafe { Box::from_raw(pp) })
 }
 
 /*
@@ -219,9 +219,9 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_CatchPerformanceAttributes_clone_000
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_CatchPerformanceAttributes_destroy_00024rosu_1pp_1jni(
-    _env: JNIEnv, _this: jclass, attributes: &CatchPerformanceAttributes,
+    _env: JNIEnv, _this: jclass, attributes: *mut CatchPerformanceAttributes,
 ) {
-    attributes;
+    drop(unsafe { Box::from_raw(attributes) })
 }
 
 /*
