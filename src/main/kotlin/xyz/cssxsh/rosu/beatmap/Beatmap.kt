@@ -2,7 +2,7 @@ package xyz.cssxsh.rosu.beatmap
 
 import xyz.cssxsh.rosu.GameMode
 import xyz.cssxsh.rosu.Library
-import xyz.cssxsh.rosu.PRETTY_PRINT_KEY
+import xyz.cssxsh.rosu.pretty
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -30,7 +30,9 @@ public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) 
 
     protected fun finalize(): Unit = destroy(ptr = ptr)
 
-    override fun clone(): Beatmap = Beatmap(ptr = clone(ptr = ptr))
+    public override fun clone(): Beatmap = Beatmap(ptr = clone(ptr = ptr))
+
+    override fun toString(): String = debug(ptr = ptr, pretty = pretty())
 
     /**
      * [Game Mode](https://osu.ppy.sh/wiki/en/Ranking_Criteria)
@@ -181,8 +183,6 @@ public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) 
     public fun convertMode(mode: GameMode): Beatmap {
         return Beatmap(ptr = convertMode(ptr = ptr, mode = mode.ordinal))
     }
-
-    override fun toString(): String = debug(ptr = ptr, pretty = java.lang.Boolean.getBoolean(PRETTY_PRINT_KEY))
 
     public companion object {
         init {

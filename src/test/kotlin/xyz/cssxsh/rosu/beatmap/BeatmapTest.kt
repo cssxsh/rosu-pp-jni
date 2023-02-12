@@ -1,12 +1,14 @@
-package xyz.cssxsh.rosu
+package xyz.cssxsh.rosu.beatmap
 
-import xyz.cssxsh.rosu.beatmap.Beatmap
+import xyz.cssxsh.rosu.GameMode
 import java.io.File
 import kotlin.test.*
 
 internal class BeatmapTest {
 
     private fun assertBeatmap(expected: GameMode, map: Beatmap) {
+        assertNotEquals(0, map.ptr)
+        assertTrue(expected.name in map.toString())
         when (expected) {
             GameMode.Osu -> {
                 assertEquals(GameMode.Osu, map.mode)
@@ -97,5 +99,14 @@ internal class BeatmapTest {
         assertBeatmap(GameMode.Catch, Beatmap(bytes = File("./maps/2118524.osu").readBytes()))
         assertBeatmap(GameMode.Mania, Beatmap(path = "./maps/1974394.osu"))
         assertBeatmap(GameMode.Mania, Beatmap(bytes = File("./maps/1974394.osu").readBytes()))
+    }
+
+    @Test
+    fun clone() {
+        val map = Beatmap(path = "./maps/2785319.osu")
+        val clone = map.clone()
+        assertNotEquals(map.ptr, clone.ptr)
+        assertEquals(map.toString(), clone.toString())
+        assertBeatmap(GameMode.Osu, clone)
     }
 }
