@@ -38,7 +38,7 @@ jobs:
       - name: Upload JNI
         uses: actions/upload-artifact@v3
         with:
-          name: push-build
+          name: push-build-windows
           path: src/test/resources/*
 
       - name: chmod -R 777 *
@@ -46,7 +46,7 @@ jobs:
 
       - name: Build Jar
         shell: bash
-        run: ./gradlew build
+        run: ./gradlew build --scan --info
 
 
   linux-build:
@@ -101,18 +101,17 @@ jobs:
 
       - name: Rename Library File Name
         shell: bash
-        working-directory: rust
         run: |
           mkdir -p src/test/resources
-          cp target/x86_64-unknown-linux-gnu/release/librosu_pp_jni.so src/test/resources/librosu-linux-x64.so
+          cp rust/target/x86_64-unknown-linux-gnu/release/librosu_pp_jni.so src/test/resources/librosu-linux-x64.so
           sha256sum src/test/resources/librosu-linux-x64.so | awk '{ print $1 }' > src/test/resources/librosu-linux-x64.so.sha256
-          cp target/aarch64-unknown-linux-gnu/release/librosu_pp_jni.so src/test/resources/librosu-linux-arm64.so
+          cp rust/target/aarch64-unknown-linux-gnu/release/librosu_pp_jni.so src/test/resources/librosu-linux-arm64.so
           sha256sum src/test/resources/librosu-linux-arm64.so | awk '{ print $1 }' > src/test/resources/librosu-linux-arm64.so.sha256
 
       - name: Upload JNI
         uses: actions/upload-artifact@v3
         with:
-          name: push-build
+          name: push-build-linux
           path: src/test/resources/*
 
       - name: chmod -R 777 *
@@ -120,7 +119,7 @@ jobs:
 
       - name: Build Jar
         shell: bash
-        run: ./gradlew build
+        run: ./gradlew build --scan --info
           
 
 
@@ -183,26 +182,18 @@ jobs:
 
       - name: Rename Library File Name
         shell: bash
-        working-directory: rust
         run: |
           mkdir -p src/test/resources
-          cp target/x86_64-linux-android/release/librosu_pp_jni.so src/test/resources/librosu-android-x64.so
+          cp rust/target/x86_64-linux-android/release/librosu_pp_jni.so src/test/resources/librosu-android-x64.so
           sha256sum src/test/resources/librosu-android-x64.so | awk '{ print $1 }' > src/test/resources/librosu-android-x64.so.sha256
-          cp target/aarch64-linux-android/release/librosu_pp_jni.so src/test/resources/librosu-android-arm64.so
+          cp rust/target/aarch64-linux-android/release/librosu_pp_jni.so src/test/resources/librosu-android-arm64.so
           sha256sum src/test/resources/librosu-android-arm64.so | awk '{ print $1 }' > src/test/resources/librosu-android-arm64.so.sha256
 
       - name: Upload JNI
         uses: actions/upload-artifact@v3
         with:
-          name: push-build
+          name: push-build-android
           path: src/test/resources/*
-
-      - name: chmod -R 777 *
-        run: chmod -R 777 *
-
-      - name: Build Jar
-        shell: bash
-        run: ./gradlew build
 
 
   macos-build:
@@ -237,18 +228,17 @@ jobs:
 
       - name: Rename Library File Name
         shell: bash
-        working-directory: rust
         run: |
           mkdir -p src/test/resources
-          cp target/x86_64-apple-darwin/release/librosu_pp_jni.dylib src/test/resources/librosu-macos-x64.dylib
+          cp rust/target/x86_64-apple-darwin/release/librosu_pp_jni.dylib src/test/resources/librosu-macos-x64.dylib
           shasum -a 256 src/test/resources/librosu-macos-x64.dylib | awk '{ print $1 }' > src/test/resources/librosu-macos-x64.dylib.sha256
-          cp target/aarch64-apple-darwin/release/librosu_pp_jni.dylib src/test/resources/librosu-macos-arm64.dylib
+          cp rust/target/aarch64-apple-darwin/release/librosu_pp_jni.dylib src/test/resources/librosu-macos-arm64.dylib
           shasum -a 256 src/test/resources/librosu-macos-arm64.dylib | awk '{ print $1 }' > src/test/resources/librosu-macos-arm64.dylib.sha256
 
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
-          name: push-build
+          name: push-build-macos
           path: src/test/resources/*
 
       - name: chmod -R 777 *
@@ -256,5 +246,5 @@ jobs:
 
       - name: Build Jar
         shell: bash
-        run: ./gradlew build
+        run: ./gradlew build --scan --info
 

@@ -40,7 +40,7 @@ public object Library {
     private var copyDir: File? = null
 
     /**
-     * 尝试加载 GIF_LIBRARY
+     * 尝试加载 ROSU_LIBRARY
      */
     public fun staticLoad() {
         if (loaded.compareAndSet(false, true)) {
