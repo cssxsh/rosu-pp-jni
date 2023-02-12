@@ -39,9 +39,9 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_clone_00024rosu_1pp_1jni<'jvm>
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_destroy_00024rosu_1pp_1jni<'jvm>(
-    _env: JNIEnv<'jvm>, _this: jclass, pp: &OsuPP<'jvm>,
+    _env: JNIEnv<'jvm>, _this: jclass, pp: *mut OsuPP<'jvm>,
 ) {
-    pp;
+    drop(unsafe { Box::from_raw(pp) })
 }
 
 /*
@@ -245,9 +245,9 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPerformanceAttributes_clone_00024
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPerformanceAttributes_destroy_00024rosu_1pp_1jni(
-    _env: JNIEnv, _this: jclass, attributes: &OsuPerformanceAttributes,
+    _env: JNIEnv, _this: jclass, attributes: *mut OsuPerformanceAttributes,
 ) {
-    attributes;
+    drop(unsafe { Box::from_raw(attributes) })
 }
 
 /*

@@ -39,9 +39,9 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_TaikoPP_clone_00024rosu_1pp_1jni<'jv
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_TaikoPP_destroy_00024rosu_1pp_1jni<'jvm>(
-    _env: JNIEnv<'jvm>, _this: jclass, pp: &TaikoPP<'jvm>,
+    _env: JNIEnv<'jvm>, _this: jclass, pp: *mut TaikoPP<'jvm>,
 ) {
-    pp;
+    drop(unsafe { Box::from_raw(pp) })
 }
 
 /*
@@ -224,9 +224,9 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_TaikoPerformanceAttributes_clone_000
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_TaikoPerformanceAttributes_destroy_00024rosu_1pp_1jni(
-    _env: JNIEnv, _this: jclass, attributes: &TaikoPerformanceAttributes,
+    _env: JNIEnv, _this: jclass, attributes: *mut TaikoPerformanceAttributes,
 ) {
-    attributes;
+    drop(unsafe { Box::from_raw(attributes) })
 }
 
 /*

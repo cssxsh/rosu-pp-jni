@@ -39,9 +39,9 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_clone_00024rosu_1pp_1jni<'jv
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_destroy_00024rosu_1pp_1jni<'jvm>(
-    _env: JNIEnv<'jvm>, _this: jclass, pp: &ManiaPP<'jvm>,
+    _env: JNIEnv<'jvm>, _this: jclass, pp: *mut ManiaPP<'jvm>,
 ) {
-    pp;
+    drop(unsafe { Box::from_raw(pp) })
 }
 
 /*
@@ -247,9 +247,9 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPerformanceAttributes_clone_000
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPerformanceAttributes_destroy_00024rosu_1pp_1jni(
-    _env: JNIEnv, _this: jclass, attributes: &ManiaPerformanceAttributes,
+    _env: JNIEnv, _this: jclass, attributes: *mut ManiaPerformanceAttributes,
 ) {
-    attributes;
+    drop(unsafe { Box::from_raw(attributes) })
 }
 
 /*

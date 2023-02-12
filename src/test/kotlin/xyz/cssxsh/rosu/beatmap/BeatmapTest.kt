@@ -103,10 +103,28 @@ internal class BeatmapTest {
 
     @Test
     fun clone() {
-        val map = Beatmap(path = "./maps/2785319.osu")
-        val clone = map.clone()
-        assertNotEquals(map.ptr, clone.ptr)
-        assertEquals(map.toString(), clone.toString())
-        assertBeatmap(GameMode.Osu, clone)
+        val osu = Beatmap(path = "./maps/2785319.osu")
+        val osu2 = osu.clone()
+        assertNotEquals(osu.ptr, osu2.ptr)
+        assertEquals(osu.toString(), osu2.toString())
+        assertBeatmap(GameMode.Osu, osu2)
+
+        val taiko = Beatmap(path = "./maps/1028484.osu")
+        val taiko2 = taiko.clone()
+        assertNotEquals(taiko.ptr, taiko2.ptr)
+        assertEquals(taiko.toString(), taiko2.toString())
+        assertBeatmap(GameMode.Taiko, taiko2)
+
+        val catch = Beatmap(path = "./maps/2118524.osu")
+        val catch2 = catch.clone()
+        assertNotEquals(catch.ptr, catch2.ptr)
+        assertEquals(catch.toString(), catch2.toString())
+        assertBeatmap(GameMode.Catch, catch2)
+
+        val mania = Beatmap(path = "./maps/1974394.osu")
+        val mania2 = mania.clone()
+        assertNotEquals(mania.ptr, mania2.ptr)
+        assertEquals(mania.toString(), mania2.toString())
+        assertBeatmap(GameMode.Mania, mania2)
     }
 }

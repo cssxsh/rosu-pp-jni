@@ -40,7 +40,7 @@ public object Library {
     private var copyDir: File? = null
 
     /**
-     * 尝试加载 GIF_LIBRARY
+     * 尝试加载 ROSU_LIBRARY
      */
     public fun staticLoad() {
         if (loaded.compareAndSet(false, true)) {
@@ -67,7 +67,7 @@ public object Library {
     private fun unpackIfNeeded(dest: File, resourceName: String): File {
         val file = File(dest, resourceName)
         if (!file.exists()) {
-            val tempFile = File.createTempFile("rsou", "", dest)
+            val tempFile = File.createTempFile("rosu", "", dest)
             Library::class.java.getResourceAsStream("/$resourceName")!!.use { input ->
                 Files.copy(input, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
             }
@@ -78,7 +78,7 @@ public object Library {
 
     @Synchronized
     internal fun load() {
-        val name = "rsou-$hostOs-$hostArch"
+        val name = "rosu-$hostOs-$hostArch"
         val platformName = System.mapLibraryName(name)
 
         if (hostOs == "android") {
