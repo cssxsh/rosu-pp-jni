@@ -13,58 +13,74 @@ public class CatchPP internal constructor(@PublishedApi internal var ptr: Long, 
 
     override fun toString(): String = debug(ptr = ptr, pretty = pretty())
 
+    @ROsuPP
     override fun calculate(): CatchPerformanceAttributes {
         return CatchPerformanceAttributes(ptr = calculate(ptr = ptr))
     }
 
+    @ROsuPP
     override fun mods(value: Long): CatchPP = apply {
         withMods(ptr = ptr, value = value)
     }
 
+    @ROsuPP
     override fun passedObjects(number: Long): CatchPP = apply {
         withPasseObjects(ptr = ptr, number = number)
     }
 
+    @ROsuPP
     override fun clockRate(rate: Double): CatchPP = apply {
         withClockRate(ptr = ptr, value = rate)
     }
 
+    @ROsuPP
     override fun accuracy(value: Double): CatchPP = apply {
         withAccuracy(ptr = ptr, value = value)
     }
 
+    @ROsuPP
     override fun misses(number: Long): CatchPP = apply {
         withMisses(ptr = ptr, number = number)
     }
 
+    @ROsuPP
     override fun combo(number: Long): CatchPP = apply {
         withCombo(ptr = ptr, number = number)
     }
 
+    @ROsuPP
     override fun n300(number: Long): CatchPP = apply {
         withFruits(ptr = ptr, number = number)
     }
 
+    @ROsuPP
     public fun fruits(number: Long): CatchPP = n300(number = number)
 
+    @ROsuPP
     override fun n100(number: Long): CatchPP = apply {
         withDroplets(ptr = ptr, number = number)
     }
 
+    @ROsuPP
     public fun droplets(number: Long): CatchPP = n100(number = number)
 
+    @ROsuPP
     override fun n50(number: Long): CatchPP = apply {
         withTinyDroplets(ptr = ptr, number = number)
     }
 
+    @ROsuPP
     public fun tinyDroplets(number: Long): CatchPP = n100(number = number)
 
+    @ROsuPP
     override fun katu(number: Long): CatchPP = apply {
         withTinyDropletMisses(ptr = ptr, number = number)
     }
 
+    @ROsuPP
     public fun tinyDropletMisses(number: Long): CatchPP = katu(number = number)
 
+    @ROsuPP
     override fun geki(number: Long): AnyPP = this
 
     public companion object {
