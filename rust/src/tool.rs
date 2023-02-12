@@ -4,22 +4,22 @@ use jni::objects::*;
 use rosu_pp::*;
 
 #[inline]
-pub fn parse_game_mode(index: i32) -> Result<GameMode, ParseError> {
+pub fn parse_game_mode(index: i32) -> Result<GameMode, i32> {
     match index {
         x if x == GameMode::Osu as i32 => Ok(GameMode::Osu),
         x if x == GameMode::Taiko as i32 => Ok(GameMode::Taiko),
         x if x == GameMode::Catch as i32 => Ok(GameMode::Catch),
         x if x == GameMode::Mania as i32 => Ok(GameMode::Mania),
-        _ => Err(ParseError::InvalidMode),
+        _ => Err(index),
     }
 }
 
 #[inline]
-pub fn parse_hit_result_priority(index: i32) -> Result<HitResultPriority, ParseError> {
+pub fn parse_hit_result_priority(index: i32) -> Result<HitResultPriority, i32> {
     match index {
         x if x == HitResultPriority::BestCase as i32 => Ok(HitResultPriority::BestCase),
         x if x == HitResultPriority::WorstCase as i32 => Ok(HitResultPriority::WorstCase),
-        _ => Err(ParseError::InvalidMode),
+        _ => Err(index),
     }
 }
 
@@ -64,4 +64,5 @@ fn ojb_size() {
     assert_eq!(8, size_of::<usize>());
     assert_eq!(24, size_of::<Vec<PathControlPoint>>());
     assert_eq!(24, size_of::<Vec<u8>>());
+    assert_eq!(8, size_of::<GameMode>());
 }

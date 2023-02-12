@@ -1,5 +1,8 @@
 extern crate core;
 
+mod tool;
 mod beatmap;
 mod osu_pp;
-mod tool;
+mod taiko_pp;
+mod catch_pp;
+mod maina_pp;

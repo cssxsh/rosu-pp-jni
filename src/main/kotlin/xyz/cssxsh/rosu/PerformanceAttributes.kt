@@ -1,5 +1,5 @@
 package xyz.cssxsh.rosu
 
-public sealed interface PerformanceAttributes : Cloneable {
-    public val mode: GameMode
+public sealed class PerformanceAttributes(public val mode: GameMode) : Cloneable {
+    internal abstract val ptr: Long
 }

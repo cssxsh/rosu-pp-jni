@@ -12,10 +12,7 @@ public sealed interface AnyPP : Cloneable {
     public fun calculate(): PerformanceAttributes
 
     @ROsuPP
-    public fun attributes(): AnyPP
-
-    @ROsuPP
-    public fun mode(target: GameMode): AnyPP
+    public fun mode(target: GameMode): AnyPP = this
 
     @ROsuPP
     public fun mods(value: Long): AnyPP
@@ -25,9 +22,6 @@ public sealed interface AnyPP : Cloneable {
 
     @ROsuPP
     public fun clockRate(rate: Double): AnyPP
-
-    @ROsuPP
-    public fun state(target: Any): AnyPP
 
     @ROsuPP
     public fun accuracy(value: Double): AnyPP

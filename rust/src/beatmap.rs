@@ -491,7 +491,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_beatmap_Beatmap_convertMode_00024ros
 ) -> *mut Beatmap {
     let beatmap = unsafe { Box::from_raw(ptr) };
     let mode = parse_game_mode(index)
-        .unwrap_or_else(|error| _env.fatal_error(error.to_string()));
+        .unwrap_or_else(|index| _env.fatal_error(format!("error index: {index}")));
 
     let cow = beatmap.convert_mode(mode);
     let new = cow.into_owned();
