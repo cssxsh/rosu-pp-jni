@@ -3,7 +3,7 @@ package xyz.cssxsh.rosu
 import xyz.cssxsh.rosu.beatmap.Beatmap
 
 public class CatchPP internal constructor(@PublishedApi internal var ptr: Long, override val map: Beatmap) : AnyPP {
-    override val mode: GameMode = GameMode.Osu
+    override val mode: GameMode = GameMode.Catch
 
     internal constructor(map: Beatmap) : this(ptr = create(map = map.ptr), map = map)
 
