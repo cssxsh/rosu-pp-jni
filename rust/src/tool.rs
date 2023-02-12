@@ -15,6 +15,15 @@ pub fn parse_game_mode(index: i32) -> Result<GameMode, ParseError> {
 }
 
 #[inline]
+pub fn parse_hit_result_priority(index: i32) -> Result<HitResultPriority, ParseError> {
+    match index {
+        x if x == HitResultPriority::BestCase as i32 => Ok(HitResultPriority::BestCase),
+        x if x == HitResultPriority::WorstCase as i32 => Ok(HitResultPriority::WorstCase),
+        _ => Err(ParseError::InvalidMode),
+    }
+}
+
+#[inline]
 pub fn option_to_byte_buffer<T>(_env: JNIEnv, option: Option<T>) -> JByteBuffer {
     return match option {
         None => {
