@@ -41,6 +41,9 @@ jobs:
           name: push-build
           path: src/test/resources/*
 
+      - name: chmod -R 777 *
+        run: chmod -R 777 *
+
       - name: Build Jar
         shell: bash
         run: ./gradlew build
@@ -111,6 +114,9 @@ jobs:
         with:
           name: push-build
           path: src/test/resources/*
+
+      - name: chmod -R 777 *
+        run: chmod -R 777 *
 
       - name: Build Jar
         shell: bash
@@ -191,6 +197,9 @@ jobs:
           name: push-build
           path: src/test/resources/*
 
+      - name: chmod -R 777 *
+        run: chmod -R 777 *
+
       - name: Build Jar
         shell: bash
         run: ./gradlew build
@@ -241,6 +250,9 @@ jobs:
         with:
           name: push-build
           path: src/test/resources/*
+
+      - name: chmod -R 777 *
+        run: chmod -R 777 *
 
       - name: Build Jar
         shell: bash
