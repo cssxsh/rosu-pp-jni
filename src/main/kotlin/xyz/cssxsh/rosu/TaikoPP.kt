@@ -2,7 +2,8 @@ package xyz.cssxsh.rosu
 
 import xyz.cssxsh.rosu.beatmap.Beatmap
 
-public class TaikoPP internal constructor(@PublishedApi internal val ptr: Long, override val map: Beatmap) : AnyPP {
+public class TaikoPP @PublishedApi internal constructor(internal val ptr: Long, override val map: Beatmap) :
+    AnyPP {
     override val mode: GameMode = GameMode.Taiko
 
     internal constructor(map: Beatmap) : this(ptr = create(map = map.ptr), map = map)
@@ -34,8 +35,8 @@ public class TaikoPP internal constructor(@PublishedApi internal val ptr: Long, 
     }
 
     @ROsuPP
-    override fun mods(value: Long): TaikoPP = apply {
-        withMods(ptr = ptr, value = value)
+    override fun mods(flag: Long): TaikoPP = apply {
+        withMods(ptr = ptr, flag = flag)
     }
 
     @ROsuPP
@@ -106,7 +107,7 @@ public class TaikoPP internal constructor(@PublishedApi internal val ptr: Long, 
         internal external fun withAttributes(ptr: Long, value: Long, mode: Int)
 
         @JvmStatic
-        internal external fun withMods(ptr: Long, value: Long)
+        internal external fun withMods(ptr: Long, flag: Long)
 
         @JvmStatic
         internal external fun withCombo(ptr: Long, number: Long): Long

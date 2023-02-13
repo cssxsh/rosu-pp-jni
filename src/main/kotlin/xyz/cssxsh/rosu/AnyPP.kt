@@ -18,7 +18,7 @@ public sealed interface AnyPP : Cloneable {
     public fun mode(target: GameMode): AnyPP = this
 
     @ROsuPP
-    public fun mods(value: Long): AnyPP
+    public fun mods(flag: Long): AnyPP
 
     @ROsuPP
     public fun passedObjects(number: Long): AnyPP
@@ -59,10 +59,10 @@ public sealed interface AnyPP : Cloneable {
         @JvmName("create")
         public operator fun invoke(map: Beatmap): AnyPP {
             return when (map.mode) {
-                GameMode.Osu -> OsuPP(map)
-                GameMode.Taiko -> TaikoPP(map)
-                GameMode.Catch -> CatchPP(map)
-                GameMode.Mania -> ManiaPP(map)
+                GameMode.Osu -> OsuPP(map = map)
+                GameMode.Taiko -> TaikoPP(map = map)
+                GameMode.Catch -> CatchPP(map = map)
+                GameMode.Mania -> ManiaPP(map = map)
             }
         }
 
@@ -71,10 +71,10 @@ public sealed interface AnyPP : Cloneable {
         public fun map(bytes: ByteArray): AnyPP {
             val map = Beatmap(bytes)
             return when (map.mode) {
-                GameMode.Osu -> OsuPP(map)
-                GameMode.Taiko -> TaikoPP(map)
-                GameMode.Catch -> CatchPP(map)
-                GameMode.Mania -> ManiaPP(map)
+                GameMode.Osu -> OsuPP(map = map)
+                GameMode.Taiko -> TaikoPP(map = map)
+                GameMode.Catch -> CatchPP(map = map)
+                GameMode.Mania -> ManiaPP(map = map)
             }
         }
 
@@ -83,10 +83,10 @@ public sealed interface AnyPP : Cloneable {
         public fun map(path: String): AnyPP {
             val map = Beatmap(path)
             return when (map.mode) {
-                GameMode.Osu -> OsuPP(map)
-                GameMode.Taiko -> TaikoPP(map)
-                GameMode.Catch -> CatchPP(map)
-                GameMode.Mania -> ManiaPP(map)
+                GameMode.Osu -> OsuPP(map = map)
+                GameMode.Taiko -> TaikoPP(map = map)
+                GameMode.Catch -> CatchPP(map = map)
+                GameMode.Mania -> ManiaPP(map = map)
             }
         }
     }
