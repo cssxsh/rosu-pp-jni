@@ -291,36 +291,36 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPerformanceAttributes_debug_000
 }
 
 /*
- * Class:     xyz_cssxsh_rosu_MainaPerformanceAttributes
+ * Class:     xyz_cssxsh_rosu_ManiaPerformanceAttributes
  * Method:    pp_00024rosu_pp_jni
  * Signature: (J)D
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_rosu_MainaPerformanceAttributes_pp_00024rosu_1pp_1jni<'jvm>(
+pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPerformanceAttributes_pp_00024rosu_1pp_1jni<'jvm>(
     _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm ManiaPerformanceAttributes,
 ) -> jdouble {
     attributes.pp() as _
 }
 
 /*
- * Class:     xyz_cssxsh_rosu_MainaPerformanceAttributes
+ * Class:     xyz_cssxsh_rosu_ManiaPerformanceAttributes
  * Method:    stars_00024rosu_pp_jni
  * Signature: (J)D
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_rosu_MainaPerformanceAttributes_stars_00024rosu_1pp_1jni<'jvm>(
+pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPerformanceAttributes_stars_00024rosu_1pp_1jni<'jvm>(
     _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm ManiaPerformanceAttributes,
 ) -> jdouble {
     attributes.stars() as _
 }
 
 /*
- * Class:     xyz_cssxsh_rosu_MainaPerformanceAttributes
+ * Class:     xyz_cssxsh_rosu_ManiaPerformanceAttributes
  * Method:    maxCombo_00024rosu_pp_jni
  * Signature: (J)J
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_rosu_MainaPerformanceAttributes_maxCombo_00024rosu_1pp_1jni<'jvm>(
+pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPerformanceAttributes_maxCombo_00024rosu_1pp_1jni<'jvm>(
     _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm ManiaPerformanceAttributes,
 ) -> jlong {
     attributes.max_combo() as _

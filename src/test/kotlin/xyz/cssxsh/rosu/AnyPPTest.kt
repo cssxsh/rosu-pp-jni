@@ -14,6 +14,7 @@ internal class AnyPPTest {
                 assertEquals(expected, attributes.mode)
                 assertNotEquals(0, attributes.ptr)
 
+                assertEquals(attributes.stars(), 5.669858729379628)
                 assertEquals(attributes.maxCombo(), 909)
             }
             GameMode.Taiko -> {
@@ -23,6 +24,7 @@ internal class AnyPPTest {
                 assertEquals(expected, attributes.mode)
                 assertNotEquals(0, attributes.ptr)
 
+                assertEquals(attributes.stars(), 2.9778030386845606)
                 assertEquals(attributes.maxCombo(), 289)
             }
             GameMode.Catch -> {
@@ -32,6 +34,7 @@ internal class AnyPPTest {
                 assertEquals(expected, attributes.mode)
                 assertNotEquals(0, attributes.ptr)
 
+                assertEquals(attributes.stars(), 3.2502669316166624)
                 assertEquals(attributes.maxCombo(), 730)
             }
             GameMode.Mania -> {
@@ -41,6 +44,7 @@ internal class AnyPPTest {
                 assertEquals(expected, attributes.mode)
                 assertNotEquals(0, attributes.ptr)
 
+                assertEquals(attributes.stars(), 4.824631127426499)
                 assertEquals(attributes.maxCombo(), 5064)
             }
         }
