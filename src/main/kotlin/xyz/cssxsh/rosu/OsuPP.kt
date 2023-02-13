@@ -19,6 +19,11 @@ public class OsuPP internal constructor(@PublishedApi internal var ptr: Long, ov
     }
 
     @ROsuPP
+    override fun attributes(value: PerformanceAttributes): OsuPP = apply {
+        withAttributes(ptr = ptr, value = value.ptr, mode = value.mode.ordinal)
+    }
+
+    @ROsuPP
     public fun hitResultPriority(priority: HitResultPriority): OsuPP = apply {
         withHitResultPriority(ptr = ptr, index = priority.ordinal)
     }
@@ -107,6 +112,9 @@ public class OsuPP internal constructor(@PublishedApi internal var ptr: Long, ov
 
         @JvmStatic
         internal external fun convertMode(ptr: Long, mode: Int): Long
+
+        @JvmStatic
+        internal external fun withAttributes(ptr: Long, value: Long, mode: Int)
 
         @JvmStatic
         internal external fun withMods(ptr: Long, value: Long)

@@ -2,6 +2,10 @@ use std::mem::size_of;
 use jni::JNIEnv;
 use jni::objects::*;
 use rosu_pp::*;
+use rosu_pp::catch::*;
+use rosu_pp::mania::*;
+use rosu_pp::osu::*;
+use rosu_pp::taiko::*;
 
 #[inline]
 pub fn parse_game_mode(index: i32) -> Result<GameMode, i32> {
@@ -20,6 +24,44 @@ pub fn parse_hit_result_priority(index: i32) -> Result<HitResultPriority, i32> {
         x if x == HitResultPriority::BestCase as i32 => Ok(HitResultPriority::BestCase),
         x if x == HitResultPriority::WorstCase as i32 => Ok(HitResultPriority::WorstCase),
         _ => Err(index),
+    }
+}
+
+#[inline]
+pub fn parse_performance_attributes(ptr: i64, mode: GameMode) -> PerformanceAttributes {
+    match mode {
+        GameMode::Osu => {
+            let attributes = unsafe {
+                Box::from_raw(ptr as *mut OsuPerformanceAttributes)
+            };
+            let clone = attributes.as_ref().clone();
+            Box::into_raw(attributes);
+            PerformanceAttributes::Osu(clone)
+        }
+        GameMode::Taiko => {
+            let attributes = unsafe {
+                Box::from_raw(ptr as *mut TaikoPerformanceAttributes)
+            };
+            let clone = attributes.as_ref().clone();
+            Box::into_raw(attributes);
+            PerformanceAttributes::Taiko(clone)
+        }
+        GameMode::Catch => {
+            let attributes = unsafe {
+                Box::from_raw(ptr as *mut CatchPerformanceAttributes)
+            };
+            let clone = attributes.as_ref().clone();
+            Box::into_raw(attributes);
+            PerformanceAttributes::Catch(clone)
+        }
+        GameMode::Mania => {
+            let attributes = unsafe {
+                Box::from_raw(ptr as *mut ManiaPerformanceAttributes)
+            };
+            let clone = attributes.as_ref().clone();
+            Box::into_raw(attributes);
+            PerformanceAttributes::Mania(clone)
+        }
     }
 }
 

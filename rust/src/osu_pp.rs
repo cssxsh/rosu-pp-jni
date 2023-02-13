@@ -103,6 +103,23 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_convertMode_00024rosu_1pp_1jni
 
 /*
  * Class:     xyz_cssxsh_rosu_OsuPP
+ * Method:    withAttributes_00024rosu_pp_jni
+ * Signature: (JJI)V
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withAttributes_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, pp: &'jvm mut OsuPP<'jvm>, ptr: jlong, index: jint,
+) {
+    let mode = parse_game_mode(index)
+        .unwrap_or_else(|index| _env.fatal_error(format!("error index: {index}")));
+
+    let attributes = parse_performance_attributes(ptr, mode);
+
+    *pp = pp.clone().attributes(attributes);
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuPP
  * Method:    withMods_00024rosu_pp_jni
  * Signature: (JJ)V
  */
@@ -269,4 +286,40 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPerformanceAttributes_debug_00024
         .unwrap_or_else(|error| _env.fatal_error(error.to_string()));
 
     binding.into_raw()
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuPerformanceAttributes
+ * Method:    pp_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPerformanceAttributes_pp_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm OsuPerformanceAttributes,
+) -> jdouble {
+    attributes.pp() as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuPerformanceAttributes
+ * Method:    stars_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPerformanceAttributes_stars_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm OsuPerformanceAttributes,
+) -> jdouble {
+    attributes.stars() as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuPerformanceAttributes
+ * Method:    stars_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPerformanceAttributes_maxCombo_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm OsuPerformanceAttributes,
+) -> jlong {
+    attributes.max_combo() as _
 }

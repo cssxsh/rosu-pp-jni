@@ -82,6 +82,23 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_TaikoPP_calculate_00024rosu_1pp_1jni
 
 /*
  * Class:     xyz_cssxsh_rosu_TaikoPP
+ * Method:    withAttributes_00024rosu_pp_jni
+ * Signature: (JJI)V
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_TaikoPP_withAttributes_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, pp: &'jvm mut TaikoPP<'jvm>, ptr: jlong, index: jint,
+) {
+    let mode = parse_game_mode(index)
+        .unwrap_or_else(|index| _env.fatal_error(format!("error index: {index}")));
+
+    let attributes = parse_performance_attributes(ptr, mode);
+
+    *pp = pp.clone().attributes(attributes);
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_TaikoPP
  * Method:    withMods_00024rosu_pp_jni
  * Signature: (JJ)V
  */
@@ -248,4 +265,40 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_TaikoPerformanceAttributes_debug_000
         .unwrap_or_else(|error| _env.fatal_error(error.to_string()));
 
     binding.into_raw()
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_TaikoPerformanceAttributes
+ * Method:    pp_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_TaikoPerformanceAttributes_pp_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm TaikoPerformanceAttributes,
+) -> jdouble {
+    attributes.pp() as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_TaikoPerformanceAttributes
+ * Method:    stars_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_TaikoPerformanceAttributes_stars_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm TaikoPerformanceAttributes,
+) -> jdouble {
+    attributes.stars() as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_TaikoPerformanceAttributes
+ * Method:    maxCombo_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_TaikoPerformanceAttributes_maxCombo_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm TaikoPerformanceAttributes,
+) -> jlong {
+    attributes.max_combo() as _
 }

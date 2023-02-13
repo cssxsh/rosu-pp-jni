@@ -19,6 +19,16 @@ public class ManiaPP internal constructor(@PublishedApi internal val ptr: Long, 
     }
 
     @ROsuPP
+    override fun attributes(value: PerformanceAttributes): ManiaPP = apply {
+        withAttributes(ptr = ptr, value = value.ptr, mode = value.mode.ordinal)
+    }
+
+    @ROsuPP
+    public fun hitResultPriority(priority: HitResultPriority): ManiaPP = apply {
+        withHitResultPriority(ptr = ptr, index = priority.ordinal)
+    }
+
+    @ROsuPP
     override fun mods(value: Long): ManiaPP = apply {
         withMods(ptr = ptr, value = value)
     }
@@ -95,6 +105,9 @@ public class ManiaPP internal constructor(@PublishedApi internal val ptr: Long, 
 
         @JvmStatic
         internal external fun calculate(ptr: Long): Long
+
+        @JvmStatic
+        internal external fun withAttributes(ptr: Long, value: Long, mode: Int)
 
         @JvmStatic
         internal external fun withMods(ptr: Long, value: Long)

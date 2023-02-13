@@ -29,6 +29,11 @@ public class TaikoPP internal constructor(@PublishedApi internal val ptr: Long, 
     }
 
     @ROsuPP
+    override fun attributes(value: PerformanceAttributes): TaikoPP = apply {
+        withAttributes(ptr = ptr, value = value.ptr, mode = value.mode.ordinal)
+    }
+
+    @ROsuPP
     override fun mods(value: Long): TaikoPP = apply {
         withMods(ptr = ptr, value = value)
     }
@@ -96,6 +101,9 @@ public class TaikoPP internal constructor(@PublishedApi internal val ptr: Long, 
 
         @JvmStatic
         internal external fun calculate(ptr: Long): Long
+
+        @JvmStatic
+        internal external fun withAttributes(ptr: Long, value: Long, mode: Int)
 
         @JvmStatic
         internal external fun withMods(ptr: Long, value: Long)

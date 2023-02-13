@@ -9,7 +9,13 @@ public class MainaPerformanceAttributes internal constructor(@PublishedApi overr
 
     override fun toString(): String = debug(ptr = ptr, pretty = pretty())
 
-    public companion object {
+    override fun pp(): Double = pp(ptr = ptr)
+
+    override fun stars(): Double = stars(ptr = ptr)
+
+    override fun maxCombo(): Long = maxCombo(ptr = ptr)
+
+    public companion object Native {
         init {
             Library.staticLoad()
         }
@@ -22,5 +28,14 @@ public class MainaPerformanceAttributes internal constructor(@PublishedApi overr
 
         @JvmStatic
         internal external fun debug(ptr: Long, pretty: Boolean): String
+
+        @JvmStatic
+        internal external fun pp(ptr: Long): Double
+
+        @JvmStatic
+        internal external fun stars(ptr: Long): Double
+
+        @JvmStatic
+        internal external fun maxCombo(ptr: Long): Long
     }
 }

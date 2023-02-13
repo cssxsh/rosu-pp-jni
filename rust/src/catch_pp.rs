@@ -2,6 +2,7 @@ use jni::JNIEnv;
 use jni::sys::*;
 use rosu_pp::*;
 use rosu_pp::catch::*;
+use crate::tool::*;
 
 /*
  * Class:     xyz_cssxsh_rosu_OsuPP
@@ -76,6 +77,23 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_CatchPP_calculate_00024rosu_1pp_1jni
     let attributes = pp.clone().calculate();
 
     Box::leak(Box::new(attributes))
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_CatchPP
+ * Method:    withAttributes_00024rosu_pp_jni
+ * Signature: (JJI)V
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_CatchPP_withAttributes_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, pp: &'jvm mut CatchPP<'jvm>, ptr: jlong, index: jint,
+) {
+    let mode = parse_game_mode(index)
+        .unwrap_or_else(|index| _env.fatal_error(format!("error index: {index}")));
+
+    let attributes = parse_performance_attributes(ptr, mode);
+
+    *pp = pp.clone().attributes(attributes);
 }
 
 /*
@@ -243,4 +261,40 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_CatchPerformanceAttributes_debug_000
         .unwrap_or_else(|error| _env.fatal_error(error.to_string()));
 
     binding.into_raw()
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_CatchPerformanceAttributes
+ * Method:    pp_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_CatchPerformanceAttributes_pp_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm CatchPerformanceAttributes,
+) -> jdouble {
+    attributes.pp() as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_CatchPerformanceAttributes
+ * Method:    stars_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_CatchPerformanceAttributes_stars_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm CatchPerformanceAttributes,
+) -> jdouble {
+    attributes.stars() as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_CatchPerformanceAttributes
+ * Method:    maxCombo_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_CatchPerformanceAttributes_maxCombo_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm CatchPerformanceAttributes,
+) -> jlong {
+    attributes.max_combo() as _
 }
