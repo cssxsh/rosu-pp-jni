@@ -2,21 +2,16 @@ package xyz.cssxsh.rosu
 
 import kotlin.test.*
 
-internal class AnyPPTest {
+internal class AnyStarsTest {
 
-    private fun assertAnyPP(expected: GameMode, pp: AnyPP) {
-        assertEquals(expected, pp.mode)
+    private fun assertAnyStars(expected: GameMode, stars: AnyStars) {
+        assertEquals(expected, stars.mode)
         when (expected) {
             GameMode.Osu -> {
-                assertIs<OsuPP>(pp)
-                assertNotEquals(0, pp.ptr)
-                val attributes = pp.calculate()
-                assertEquals(expected, attributes.mode)
-                assertNotEquals(0, attributes.ptr)
+                assertIs<OsuStars>(stars)
+                assertNotEquals(0, stars.ptr)
 
-                assertEquals(attributes.maxCombo(), 909)
-
-                val difficulty = attributes.difficulty
+                val difficulty = stars.calculate()
                 assertEquals(expected, difficulty.mode)
                 assertNotEquals(0, difficulty.ptr)
                 assertEquals(2.8693628443424104, difficulty.aim, 0.000_001)
@@ -32,17 +27,21 @@ internal class AnyPPTest {
                 assertEquals(1, difficulty.spinners)
                 assertEquals(5.669858729379628, difficulty.stars, 0.000_001)
                 assertEquals(909, difficulty.maxCombo)
+
+                val strains = stars.strains()
+                assertEquals(expected, strains.mode)
+                assertNotEquals(0, strains.ptr)
+                assertEquals(281, strains.length())
+                assertEquals(281, strains.aim.size)
+                assertEquals(281, strains.aimNoSliders.size)
+                assertEquals(281, strains.speed.size)
+                assertEquals(281, strains.flashlight.size)
             }
             GameMode.Taiko -> {
-                assertIs<TaikoPP>(pp)
-                assertNotEquals(0, pp.ptr)
-                val attributes = pp.calculate()
-                assertEquals(expected, attributes.mode)
-                assertNotEquals(0, attributes.ptr)
+                assertIs<TaikoStars>(stars)
+                assertNotEquals(0, stars.ptr)
 
-                assertEquals(attributes.maxCombo(), 289)
-
-                val difficulty = attributes.difficulty
+                val difficulty = stars.calculate()
                 assertEquals(expected, difficulty.mode)
                 assertNotEquals(0, difficulty.ptr)
                 assertEquals(1.4528845068865617, difficulty.stamina, 0.000_001)
@@ -52,17 +51,19 @@ internal class AnyPPTest {
                 assertEquals(35.0, difficulty.hitWindow, 0.000_001)
                 assertEquals(2.9778030386845606, difficulty.stars, 0.000_001)
                 assertEquals(289, difficulty.maxCombo)
+
+                val strains = stars.strains()
+                assertEquals(expected, strains.mode)
+                assertNotEquals(0, strains.ptr)
+                assertEquals(400.0, strains.sectionLength, 0.000_001)
+                assertEquals(218, strains.color.size)
+                assertEquals(218, strains.rhythm.size)
+                assertEquals(218, strains.stamina.size)
             }
             GameMode.Catch -> {
-                assertIs<CatchPP>(pp)
-                assertNotEquals(0, pp.ptr)
-                val attributes = pp.calculate()
-                assertEquals(expected, attributes.mode)
-                assertNotEquals(0, attributes.ptr)
-
-                assertEquals(attributes.maxCombo(), 730)
-
-                val difficulty = attributes.difficulty
+                assertIs<CatchStars>(stars)
+                assertNotEquals(0, stars.ptr)
+                val difficulty = stars.calculate()
                 assertEquals(expected, difficulty.mode)
                 assertNotEquals(0, difficulty.ptr)
                 assertEquals(3.2502669316166624, difficulty.stars, 0.000_001)
@@ -70,38 +71,44 @@ internal class AnyPPTest {
                 assertEquals(728, difficulty.fruits)
                 assertEquals(2, difficulty.droplets)
                 assertEquals(291, difficulty.tinyDroplets)
+
+                val strains = stars.strains()
+                assertEquals(expected, strains.mode)
+                assertNotEquals(0, strains.ptr)
+                assertEquals(750.0, strains.sectionLength, 0.000_001)
+                assertEquals(154, strains.movement.size)
             }
             GameMode.Mania -> {
-                assertIs<ManiaPP>(pp)
-                assertNotEquals(0, pp.ptr)
-                val attributes = pp.calculate()
-                assertEquals(expected, attributes.mode)
-                assertNotEquals(0, attributes.ptr)
+                assertIs<ManiaStars>(stars)
+                assertNotEquals(0, stars.ptr)
 
-                assertEquals(attributes.maxCombo(), 5064)
-
-                val difficulty = attributes.difficulty
+                val difficulty = stars.calculate()
                 assertEquals(expected, difficulty.mode)
                 assertNotEquals(0, difficulty.ptr)
                 assertEquals(4.824631127426499, difficulty.stars, 0.000_001)
                 assertEquals(40.0, difficulty.hitWindow, 0.000_001)
                 assertEquals(5064, difficulty.maxCombo)
+
+                val strains = stars.strains()
+                assertEquals(expected, strains.mode)
+                assertNotEquals(0, strains.ptr)
+                assertEquals(400.0, strains.sectionLength, 0.000_001)
+                assertEquals(740, strains.strains.size)
             }
         }
     }
-
     @Test
     fun create() {
-        val osu = AnyPP.map(path = "./maps/2785319.osu")
-        assertAnyPP(GameMode.Osu, osu)
+        val osu = AnyStars.map(path = "./maps/2785319.osu")
+        assertAnyStars(GameMode.Osu, osu)
 
-        val taiko = AnyPP.map(path = "./maps/1028484.osu")
-        assertAnyPP(GameMode.Taiko, taiko)
+        val taiko = AnyStars.map(path = "./maps/1028484.osu")
+        assertAnyStars(GameMode.Taiko, taiko)
 
-        val catch = AnyPP.map(path = "./maps/2118524.osu")
-        assertAnyPP(GameMode.Catch, catch)
+        val catch = AnyStars.map(path = "./maps/2118524.osu")
+        assertAnyStars(GameMode.Catch, catch)
 
-        val mania = AnyPP.map(path = "./maps/1974394.osu")
-        assertAnyPP(GameMode.Mania, mania)
+        val mania = AnyStars.map(path = "./maps/1974394.osu")
+        assertAnyStars(GameMode.Mania, mania)
     }
 }
