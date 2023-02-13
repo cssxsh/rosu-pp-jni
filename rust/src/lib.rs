@@ -1,4 +1,3 @@
-#![feature(exact_size_is_empty)]
 extern crate core;
 
 mod tool;
