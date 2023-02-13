@@ -2,6 +2,7 @@ package xyz.cssxsh.rosu.beatmap
 
 import xyz.cssxsh.rosu.GameMode
 import xyz.cssxsh.rosu.Library
+import xyz.cssxsh.rosu.NativePointer
 import xyz.cssxsh.rosu.pretty
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -11,7 +12,7 @@ import java.nio.ByteOrder
  *
  * @param ptr 指针
  */
-public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) : Cloneable {
+public class Beatmap @PublishedApi internal constructor(internal val ptr: NativePointer) : Cloneable {
 
     /**
      * @param bytes data of file
@@ -190,90 +191,90 @@ public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) 
         }
 
         @JvmStatic
-        internal external fun create(bytes: ByteArray): Long
+        internal external fun create(bytes: ByteArray): NativePointer
 
         @JvmStatic
-        internal external fun create(path: String): Long
+        internal external fun create(path: String): NativePointer
 
         @JvmStatic
-        internal external fun default(): Long
+        internal external fun default(): NativePointer
 
         @JvmStatic
-        internal external fun clone(ptr: Long): Long
+        internal external fun clone(ptr: Long): NativePointer
 
         @JvmStatic
-        internal external fun destroy(ptr: Long)
+        internal external fun destroy(ptr: NativePointer)
 
         @JvmStatic
-        internal external fun debug(ptr: Long, pretty: Boolean): String
+        internal external fun debug(ptr: NativePointer, pretty: Boolean): String
 
         @JvmStatic
-        internal external fun getMode(ptr: Long): Int
+        internal external fun getMode(ptr: NativePointer): Int
 
         @JvmStatic
-        internal external fun getVersion(ptr: Long): Int
+        internal external fun getVersion(ptr: NativePointer): Int
 
         @JvmStatic
-        internal external fun getNCircles(ptr: Long): Long
+        internal external fun getNCircles(ptr: NativePointer): Long
 
         @JvmStatic
-        internal external fun getNSliders(ptr: Long): Long
+        internal external fun getNSliders(ptr: NativePointer): Long
 
         @JvmStatic
-        internal external fun getNSpinners(ptr: Long): Long
+        internal external fun getNSpinners(ptr: NativePointer): Long
 
         @JvmStatic
-        internal external fun getAR(ptr: Long): Float
+        internal external fun getAR(ptr: NativePointer): Float
 
         @JvmStatic
-        internal external fun getOD(ptr: Long): Float
+        internal external fun getOD(ptr: NativePointer): Float
 
         @JvmStatic
-        internal external fun getCS(ptr: Long): Float
+        internal external fun getCS(ptr: NativePointer): Float
 
         @JvmStatic
-        internal external fun getHP(ptr: Long): Float
+        internal external fun getHP(ptr: NativePointer): Float
 
         @JvmStatic
-        internal external fun getSM(ptr: Long): Double
+        internal external fun getSM(ptr: NativePointer): Double
 
         @JvmStatic
-        internal external fun getTR(ptr: Long): Double
+        internal external fun getTR(ptr: NativePointer): Double
 
         @JvmStatic
-        internal external fun getSL(ptr: Long): Float
+        internal external fun getSL(ptr: NativePointer): Float
 
         @JvmStatic
-        internal external fun getBreaks(ptr: Long): ByteBuffer
+        internal external fun getBreaks(ptr: NativePointer): ByteBuffer
 
         @JvmStatic
-        internal external fun bpm(ptr: Long): Double
+        internal external fun bpm(ptr: NativePointer): Double
 
         @JvmStatic
-        internal external fun getTotalBreakTime(ptr: Long): Double
+        internal external fun getTotalBreakTime(ptr: NativePointer): Double
 
         @JvmStatic
-        internal external fun getSounds(ptr: Long): ByteBuffer
+        internal external fun getSounds(ptr: NativePointer): ByteBuffer
 
         @JvmStatic
-        internal external fun getTimingPoints(ptr: Long): ByteBuffer
+        internal external fun getTimingPoints(ptr: NativePointer): ByteBuffer
 
         @JvmStatic
-        internal external fun getTimingPointAt(ptr: Long, time: Double): ByteBuffer
+        internal external fun getTimingPointAt(ptr: NativePointer, time: Double): ByteBuffer
 
         @JvmStatic
-        internal external fun getDifficultyPoints(ptr: Long): ByteBuffer
+        internal external fun getDifficultyPoints(ptr: NativePointer): ByteBuffer
 
         @JvmStatic
-        internal external fun getDifficultyPointAt(ptr: Long, time: Double): ByteBuffer?
+        internal external fun getDifficultyPointAt(ptr: NativePointer, time: Double): ByteBuffer?
 
         @JvmStatic
-        internal external fun getEffectPoints(ptr: Long): ByteBuffer
+        internal external fun getEffectPoints(ptr: NativePointer): ByteBuffer
 
         @JvmStatic
-        internal external fun getEffectPointAt(ptr: Long, time: Double): ByteBuffer?
+        internal external fun getEffectPointAt(ptr: NativePointer, time: Double): ByteBuffer?
 
         @JvmStatic
-        internal external fun convertMode(ptr: Long, mode: Int): Long
+        internal external fun convertMode(ptr: NativePointer, mode: Int): Long
     }
 }

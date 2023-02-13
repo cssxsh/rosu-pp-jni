@@ -103,17 +103,34 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_convertMode_00024rosu_1pp_1jni
 
 /*
  * Class:     xyz_cssxsh_rosu_OsuPP
- * Method:    withAttributes_00024rosu_pp_jni
+ * Method:    withPerformanceAttributes_00024rosu_pp_jni
  * Signature: (JJI)V
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withAttributes_00024rosu_1pp_1jni<'jvm>(
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withPerformanceAttributes_00024rosu_1pp_1jni<'jvm>(
     _env: JNIEnv<'jvm>, _this: jclass, pp: &'jvm mut OsuPP<'jvm>, ptr: jlong, index: jint,
 ) {
     let mode = parse_game_mode(index)
         .unwrap_or_else(|index| _env.fatal_error(format!("error index: {index}")));
 
     let attributes = parse_performance_attributes(ptr, mode);
+
+    *pp = pp.clone().attributes(attributes);
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuPP
+ * Method:    withDifficultyAttributes_00024rosu_pp_jni
+ * Signature: (JJI)V
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withDifficultyAttributes_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, pp: &'jvm mut OsuPP<'jvm>, ptr: jlong, index: jint,
+) {
+    let mode = parse_game_mode(index)
+        .unwrap_or_else(|index| _env.fatal_error(format!("error index: {index}")));
+
+    let attributes = parse_difficulty_attributes(ptr, mode);
 
     *pp = pp.clone().attributes(attributes);
 }
@@ -133,7 +150,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withMods_00024rosu_1pp_1jni<'j
 /*
  * Class:     xyz_cssxsh_rosu_OsuPP
  * Method:    withCombo_00024rosu_pp_jni
- * Signature: (JJ)J
+ * Signature: (JJ)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withCombo_00024rosu_1pp_1jni<'jvm>(
@@ -145,7 +162,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withCombo_00024rosu_1pp_1jni<'
 /*
  * Class:     xyz_cssxsh_rosu_OsuPP
  * Method:    withHitResultPriority_00024rosu_pp_jni
- * Signature: (JI)J
+ * Signature: (JI)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withHitResultPriority_00024rosu_1pp_1jni<'jvm>(
@@ -160,7 +177,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withHitResultPriority_00024ros
 /*
  * Class:     xyz_cssxsh_rosu_OsuPP
  * Method:    withN300_00024rosu_pp_jni
- * Signature: (JJ)J
+ * Signature: (JJ)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withN300_00024rosu_1pp_1jni<'jvm>(
@@ -171,7 +188,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withN300_00024rosu_1pp_1jni<'j
 
 /*
  * Class:     xyz_cssxsh_rosu_OsuPP
- * Method:    setN100_00024rosu_pp_jni
+ * Method:    withN100_00024rosu_pp_jni
  * Signature: (JJ)V
  */
 #[no_mangle]
@@ -184,7 +201,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withN100_00024rosu_1pp_1jni<'j
 /*
  * Class:     xyz_cssxsh_rosu_OsuPP
  * Method:    withN50_00024rosu_pp_jni
- * Signature: (JJ)J
+ * Signature: (JJ)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withN50_00024rosu_1pp_1jni<'jvm>(
@@ -196,7 +213,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withN50_00024rosu_1pp_1jni<'jv
 /*
  * Class:     xyz_cssxsh_rosu_OsuPP
  * Method:    withNMisses_00024rosu_pp_jni
- * Signature: (JJ)J
+ * Signature: (JJ)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withNMisses_00024rosu_1pp_1jni<'jvm>(
@@ -208,7 +225,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withNMisses_00024rosu_1pp_1jni
 /*
  * Class:     xyz_cssxsh_rosu_OsuPP
  * Method:    withPasseObjects_00024rosu_pp_jni
- * Signature: (JJ)J
+ * Signature: (JJ)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withPasseObjects_00024rosu_1pp_1jni<'jvm>(
@@ -220,7 +237,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withPasseObjects_00024rosu_1pp
 /*
  * Class:     xyz_cssxsh_rosu_OsuPP
  * Method:    withClockRate_00024rosu_pp_jni
- * Signature: (JD)J
+ * Signature: (JD)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withClockRate_00024rosu_1pp_1jni<'jvm>(
@@ -232,7 +249,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withClockRate_00024rosu_1pp_1j
 /*
  * Class:     xyz_cssxsh_rosu_OsuPP
  * Method:    withAccuracy_00024rosu_pp_jni
- * Signature: (JD)J
+ * Signature: (JD)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withAccuracy_00024rosu_1pp_1jni<'jvm>(
@@ -314,12 +331,227 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPerformanceAttributes_stars_00024
 
 /*
  * Class:     xyz_cssxsh_rosu_OsuPerformanceAttributes
- * Method:    stars_00024rosu_pp_jni
- * Signature: (J)D
+ * Method:    maxCombo_00024rosu_pp_jni
+ * Signature: (J)J
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPerformanceAttributes_maxCombo_00024rosu_1pp_1jni<'jvm>(
     _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm OsuPerformanceAttributes,
 ) -> jlong {
     attributes.max_combo() as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuPerformanceAttributes
+ * Method:    getDifficulty_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPerformanceAttributes_getDifficulty_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm OsuPerformanceAttributes,
+) -> *mut OsuDifficultyAttributes {
+    let difficulty = attributes.difficulty.clone();
+    Box::into_raw(Box::new(difficulty))
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    clone_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_clone_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> *mut OsuDifficultyAttributes {
+    let clone = difficulty.clone();
+    Box::into_raw(Box::new(clone))
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    destroy_00024rosu_pp_jni
+ * Signature: (J)V
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_destroy_00024rosu_1pp_1jni(
+    _env: JNIEnv, _this: jclass, difficulty: *mut OsuDifficultyAttributes,
+) {
+    drop(unsafe { Box::from_raw(difficulty) })
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    debug_00024rosu_pp_jni
+ * Signature: (JZ)Ljava/lang/String;
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_debug_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes, pretty: jboolean,
+) -> jstring {
+    let info = if pretty != 0 {
+        format!("{difficulty:#?}")
+    } else {
+        format!("{difficulty:?}")
+    };
+
+    let binding = _env.new_string(info)
+        .unwrap_or_else(|error| _env.fatal_error(error.to_string()));
+
+    binding.into_raw()
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    getAim_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_getAim_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> jdouble {
+    difficulty.aim as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    getSpeed_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_getSpeed_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> jdouble {
+    difficulty.speed as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    getFlashlight_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_getFlashlight_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> jdouble {
+    difficulty.flashlight as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    getSpeedNoteCount_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_getSliderFactor_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> jdouble {
+    difficulty.slider_factor as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    getSpeedNoteCount_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_getSpeedNoteCount_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> jdouble {
+    difficulty.speed_note_count as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    getAR_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_getAR_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> jdouble {
+    difficulty.ar as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    getOD_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_getOD_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> jdouble {
+    difficulty.od as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    getHP_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_getHP_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> jdouble {
+    difficulty.hp as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    getNCircles_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_getNCircles_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> jlong {
+    difficulty.n_circles as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    getNSliders_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_getNSliders_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> jlong {
+    difficulty.n_sliders as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    getNSpinners_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_getNSpinners_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> jlong {
+    difficulty.n_spinners as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    getStars_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_getStars_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> jlong {
+    difficulty.stars as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuDifficultyAttributes
+ * Method:    getMaxCombo_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuDifficultyAttributes_getMaxCombo_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm OsuDifficultyAttributes,
+) -> jlong {
+    difficulty.max_combo as _
 }

@@ -81,17 +81,34 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_calculate_00024rosu_1pp_1jni
 
 /*
  * Class:     xyz_cssxsh_rosu_ManiaPP
- * Method:    withAttributes_00024rosu_pp_jni
+ * Method:    withPerformanceAttributes_00024rosu_pp_jni
  * Signature: (JJI)V
  */
 #[no_mangle]
-pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withAttributes_00024rosu_1pp_1jni<'jvm>(
+pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withPerformanceAttributes_00024rosu_1pp_1jni<'jvm>(
     _env: JNIEnv<'jvm>, _this: jclass, pp: &'jvm mut ManiaPP<'jvm>, ptr: jlong, index: jint,
 ) {
     let mode = parse_game_mode(index)
         .unwrap_or_else(|index| _env.fatal_error(format!("error index: {index}")));
 
     let attributes = parse_performance_attributes(ptr, mode);
+
+    *pp = pp.clone().attributes(attributes);
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_ManiaPP
+ * Method:    withDifficultyAttributes_00024rosu_pp_jni
+ * Signature: (JJI)V
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withDifficultyAttributes_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, pp: &'jvm mut ManiaPP<'jvm>, ptr: jlong, index: jint,
+) {
+    let mode = parse_game_mode(index)
+        .unwrap_or_else(|index| _env.fatal_error(format!("error index: {index}")));
+
+    let attributes = parse_difficulty_attributes(ptr, mode);
 
     *pp = pp.clone().attributes(attributes);
 }
@@ -111,7 +128,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withMods_00024rosu_1pp_1jni<
 /*
  * Class:     xyz_cssxsh_rosu_ManiaPP
  * Method:    withHitResultPriority_00024rosu_pp_jni
- * Signature: (JI)J
+ * Signature: (JI)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withHitResultPriority_00024rosu_1pp_1jni<'jvm>(
@@ -126,7 +143,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withHitResultPriority_00024r
 /*
  * Class:     xyz_cssxsh_rosu_ManiaPP
  * Method:    withN300_00024rosu_pp_jni
- * Signature: (JJ)J
+ * Signature: (JJ)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withN300_00024rosu_1pp_1jni<'jvm>(
@@ -137,7 +154,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withN300_00024rosu_1pp_1jni<
 
 /*
  * Class:     xyz_cssxsh_rosu_ManiaPP
- * Method:    setN100_00024rosu_pp_jni
+ * Method:    withN100_00024rosu_pp_jni
  * Signature: (JJ)V
  */
 #[no_mangle]
@@ -150,7 +167,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withN100_00024rosu_1pp_1jni<
 /*
  * Class:     xyz_cssxsh_rosu_ManiaPP
  * Method:    withN50_00024rosu_pp_jni
- * Signature: (JJ)J
+ * Signature: (JJ)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withN50_00024rosu_1pp_1jni<'jvm>(
@@ -162,7 +179,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withN50_00024rosu_1pp_1jni<'
 /*
  * Class:     xyz_cssxsh_rosu_ManiaPP
  * Method:    withN200_00024rosu_pp_jni
- * Signature: (JJ)J
+ * Signature: (JJ)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withN200_00024rosu_1pp_1jni<'jvm>(
@@ -174,7 +191,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withN200_00024rosu_1pp_1jni<
 /*
  * Class:     xyz_cssxsh_rosu_ManiaPP
  * Method:    withN320_00024rosu_pp_jni
- * Signature: (JJ)J
+ * Signature: (JJ)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withN320_00024rosu_1pp_1jni<'jvm>(
@@ -185,8 +202,8 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withN320_00024rosu_1pp_1jni<
 
 /*
  * Class:     xyz_cssxsh_rosu_ManiaPP
- * Method:    withPasseObjects_00024rosu_pp_jni
- * Signature: (JJ)J
+ * Method:    withNMisses_00024rosu_pp_jni
+ * Signature: (JJ)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withNMisses_00024rosu_1pp_1jni<'jvm>(
@@ -198,7 +215,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withNMisses_00024rosu_1pp_1j
 /*
  * Class:     xyz_cssxsh_rosu_ManiaPP
  * Method:    withPasseObjects_00024rosu_pp_jni
- * Signature: (JJ)J
+ * Signature: (JJ)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withPasseObjects_00024rosu_1pp_1jni<'jvm>(
@@ -210,7 +227,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withPasseObjects_00024rosu_1
 /*
  * Class:     xyz_cssxsh_rosu_ManiaPP
  * Method:    withClockRate_00024rosu_pp_jni
- * Signature: (JD)J
+ * Signature: (JD)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withClockRate_00024rosu_1pp_1jni<'jvm>(
@@ -222,7 +239,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withClockRate_00024rosu_1pp_
 /*
  * Class:     xyz_cssxsh_rosu_ManiaPP
  * Method:    withAccuracy_00024rosu_pp_jni
- * Signature: (JD)J
+ * Signature: (JD)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withAccuracy_00024rosu_1pp_1jni<'jvm>(
@@ -234,7 +251,7 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withAccuracy_00024rosu_1pp_1
 /*
  * Class:     xyz_cssxsh_rosu_ManiaPP
  * Method:    withIsConvert_00024rosu_pp_jni
- * Signature: (JZ)J
+ * Signature: (JZ)V
  */
 #[no_mangle]
 pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withIsConvert_00024rosu_1pp_1jni<'jvm>(
@@ -324,4 +341,99 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPerformanceAttributes_maxCombo_
     _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm ManiaPerformanceAttributes,
 ) -> jlong {
     attributes.max_combo() as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_ManiaPerformanceAttributes
+ * Method:    getDifficulty_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPerformanceAttributes_getDifficulty_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, attributes: &'jvm ManiaPerformanceAttributes,
+) -> *mut ManiaDifficultyAttributes {
+    let difficulty = attributes.difficulty.clone();
+    Box::into_raw(Box::new(difficulty))
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_ManiaDifficultyAttributes
+ * Method:    clone_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaDifficultyAttributes_clone_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm ManiaDifficultyAttributes,
+) -> *mut ManiaDifficultyAttributes {
+    let clone = difficulty.clone();
+    Box::into_raw(Box::new(clone))
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_ManiaDifficultyAttributes
+ * Method:    destroy_00024rosu_pp_jni
+ * Signature: (J)V
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaDifficultyAttributes_destroy_00024rosu_1pp_1jni(
+    _env: JNIEnv, _this: jclass, difficulty: *mut ManiaDifficultyAttributes,
+) {
+    drop(unsafe { Box::from_raw(difficulty) })
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_ManiaDifficultyAttributes
+ * Method:    debug_00024rosu_pp_jni
+ * Signature: (JZ)Ljava/lang/String;
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaDifficultyAttributes_debug_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm ManiaDifficultyAttributes, pretty: jboolean,
+) -> jstring {
+    let info = if pretty != 0 {
+        format!("{difficulty:#?}")
+    } else {
+        format!("{difficulty:?}")
+    };
+
+    let binding = _env.new_string(info)
+        .unwrap_or_else(|error| _env.fatal_error(error.to_string()));
+
+    binding.into_raw()
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_ManiaDifficultyAttributes
+ * Method:    getStars_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaDifficultyAttributes_getStars_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm ManiaDifficultyAttributes,
+) -> jdouble {
+    difficulty.stars as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_ManiaDifficultyAttributes
+ * Method:    getHitWindow_00024rosu_pp_jni
+ * Signature: (J)D
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaDifficultyAttributes_getHitWindow_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm ManiaDifficultyAttributes,
+) -> jlong {
+    difficulty.hit_window as _
+}
+
+/*
+ * Class:     xyz_cssxsh_rosu_ManiaDifficultyAttributes
+ * Method:    getMaxCombo_00024rosu_pp_jni
+ * Signature: (J)J
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaDifficultyAttributes_getMaxCombo_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, difficulty: &'jvm ManiaDifficultyAttributes,
+) -> jlong {
+    difficulty.max_combo as _
 }

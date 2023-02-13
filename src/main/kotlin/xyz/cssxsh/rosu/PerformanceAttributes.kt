@@ -8,4 +8,6 @@ public sealed class PerformanceAttributes(public val mode: GameMode) : Cloneable
     public abstract fun stars(): Double
 
     public abstract fun maxCombo(): Long
+
+    public abstract val difficulty: DifficultyAttributes
 }

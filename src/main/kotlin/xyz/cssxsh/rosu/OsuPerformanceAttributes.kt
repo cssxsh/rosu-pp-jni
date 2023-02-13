@@ -1,6 +1,6 @@
 package xyz.cssxsh.rosu
 
-public class OsuPerformanceAttributes @PublishedApi internal constructor(override val ptr: Long) :
+public class OsuPerformanceAttributes @PublishedApi internal constructor(override val ptr: NativePointer) :
     PerformanceAttributes(mode = GameMode.Osu) {
 
     protected fun finalize(): Unit = destroy(ptr = ptr)
@@ -15,27 +15,32 @@ public class OsuPerformanceAttributes @PublishedApi internal constructor(overrid
 
     override fun maxCombo(): Long = maxCombo(ptr = ptr)
 
+    override val difficulty: OsuDifficultyAttributes get() = OsuDifficultyAttributes(ptr = getDifficulty(ptr = ptr))
+
     public companion object Native {
         init {
             Library.staticLoad()
         }
 
         @JvmStatic
-        internal external fun clone(ptr: Long): Long
+        internal external fun clone(ptr: NativePointer): NativePointer
 
         @JvmStatic
-        internal external fun destroy(ptr: Long)
+        internal external fun destroy(ptr: NativePointer)
 
         @JvmStatic
-        internal external fun debug(ptr: Long, pretty: Boolean): String
+        internal external fun debug(ptr: NativePointer, pretty: Boolean): String
 
         @JvmStatic
-        internal external fun pp(ptr: Long): Double
+        internal external fun pp(ptr: NativePointer): Double
 
         @JvmStatic
-        internal external fun stars(ptr: Long): Double
+        internal external fun stars(ptr: NativePointer): Double
 
         @JvmStatic
-        internal external fun maxCombo(ptr: Long): Long
+        internal external fun maxCombo(ptr: NativePointer): Long
+
+        @JvmStatic
+        internal external fun getDifficulty(ptr: NativePointer): NativePointer
     }
 }

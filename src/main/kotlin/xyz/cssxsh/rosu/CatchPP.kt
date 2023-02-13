@@ -2,7 +2,7 @@ package xyz.cssxsh.rosu
 
 import xyz.cssxsh.rosu.beatmap.Beatmap
 
-public class CatchPP @PublishedApi internal constructor(internal val ptr: Long, override val map: Beatmap) :
+public class CatchPP @PublishedApi internal constructor(internal val ptr: NativePointer, override val map: Beatmap) :
     AnyPP {
     override val mode: GameMode = GameMode.Catch
 
@@ -21,7 +21,12 @@ public class CatchPP @PublishedApi internal constructor(internal val ptr: Long, 
 
     @ROsuPP
     override fun attributes(value: PerformanceAttributes): CatchPP = apply {
-        withAttributes(ptr = ptr, value = value.ptr, mode = value.mode.ordinal)
+        withPerformanceAttributes(ptr = ptr, value = value.ptr, mode = value.mode.ordinal)
+    }
+
+    @ROsuPP
+    override fun attributes(value: DifficultyAttributes): CatchPP = apply {
+        withDifficultyAttributes(ptr = ptr, value = value.ptr, mode = value.mode.ordinal)
     }
 
     @ROsuPP
@@ -95,51 +100,54 @@ public class CatchPP @PublishedApi internal constructor(internal val ptr: Long, 
         }
 
         @JvmStatic
-        internal external fun create(map: Long): Long
+        internal external fun create(map: NativePointer): NativePointer
 
         @JvmStatic
-        internal external fun clone(ptr: Long): Long
+        internal external fun clone(ptr: NativePointer): NativePointer
 
         @JvmStatic
-        internal external fun destroy(ptr: Long)
+        internal external fun destroy(ptr: NativePointer)
 
         @JvmStatic
-        internal external fun debug(ptr: Long, pretty: Boolean): String
+        internal external fun debug(ptr: NativePointer, pretty: Boolean): String
 
         @JvmStatic
-        internal external fun calculate(ptr: Long): Long
+        internal external fun calculate(ptr: NativePointer): NativePointer
 
         @JvmStatic
-        internal external fun withAttributes(ptr: Long, value: Long, mode: Int)
+        internal external fun withPerformanceAttributes(ptr: NativePointer, value: NativePointer, mode: Int)
 
         @JvmStatic
-        internal external fun withMods(ptr: Long, flag: Long)
+        internal external fun withMods(ptr: NativePointer, flag: Long)
 
         @JvmStatic
-        internal external fun withCombo(ptr: Long, number: Long): Long
+        internal external fun withCombo(ptr: NativePointer, number: Long)
 
         @JvmStatic
-        internal external fun withFruits(ptr: Long, number: Long): Long
+        internal external fun withFruits(ptr: NativePointer, number: Long)
 
         @JvmStatic
-        internal external fun withDroplets(ptr: Long, number: Long): Long
+        internal external fun withDroplets(ptr: NativePointer, number: Long)
 
         @JvmStatic
-        internal external fun withTinyDropletMisses(ptr: Long, number: Long): Long
+        internal external fun withTinyDropletMisses(ptr: NativePointer, number: Long)
 
         @JvmStatic
-        internal external fun withTinyDroplets(ptr: Long, number: Long): Long
+        internal external fun withTinyDroplets(ptr: NativePointer, number: Long)
 
         @JvmStatic
-        internal external fun withMisses(ptr: Long, number: Long): Long
+        internal external fun withMisses(ptr: NativePointer, number: Long)
 
         @JvmStatic
-        internal external fun withPasseObjects(ptr: Long, number: Long): Long
+        internal external fun withPasseObjects(ptr: NativePointer, number: Long)
 
         @JvmStatic
-        internal external fun withClockRate(ptr: Long, value: Double): Long
+        internal external fun withClockRate(ptr: NativePointer, value: Double)
 
         @JvmStatic
         internal external fun withAccuracy(ptr: Long, value: Double): Long
+
+        @JvmStatic
+        internal external fun withDifficultyAttributes(ptr: NativePointer, value: NativePointer, mode: Int)
     }
 }

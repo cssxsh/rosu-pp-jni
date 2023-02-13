@@ -15,6 +15,9 @@ public sealed interface AnyPP : Cloneable {
     public fun attributes(value: PerformanceAttributes): AnyPP
 
     @ROsuPP
+    public fun attributes(value: DifficultyAttributes): AnyPP
+
+    @ROsuPP
     public fun mode(target: GameMode): AnyPP = this
 
     @ROsuPP

@@ -66,6 +66,44 @@ pub fn parse_performance_attributes(ptr: i64, mode: GameMode) -> PerformanceAttr
 }
 
 #[inline]
+pub fn parse_difficulty_attributes(ptr: i64, mode: GameMode) -> DifficultyAttributes {
+    match mode {
+        GameMode::Osu => {
+            let attributes = unsafe {
+                Box::from_raw(ptr as *mut OsuDifficultyAttributes)
+            };
+            let clone = attributes.as_ref().clone();
+            Box::into_raw(attributes);
+            DifficultyAttributes::Osu(clone)
+        }
+        GameMode::Taiko => {
+            let attributes = unsafe {
+                Box::from_raw(ptr as *mut TaikoDifficultyAttributes)
+            };
+            let clone = attributes.as_ref().clone();
+            Box::into_raw(attributes);
+            DifficultyAttributes::Taiko(clone)
+        }
+        GameMode::Catch => {
+            let attributes = unsafe {
+                Box::from_raw(ptr as *mut CatchDifficultyAttributes)
+            };
+            let clone = attributes.as_ref().clone();
+            Box::into_raw(attributes);
+            DifficultyAttributes::Catch(clone)
+        }
+        GameMode::Mania => {
+            let attributes = unsafe {
+                Box::from_raw(ptr as *mut ManiaDifficultyAttributes)
+            };
+            let clone = attributes.as_ref().clone();
+            Box::into_raw(attributes);
+            DifficultyAttributes::Mania(clone)
+        }
+    }
+}
+
+#[inline]
 pub fn option_to_byte_buffer<T>(_env: JNIEnv, option: Option<T>) -> JByteBuffer {
     return match option {
         None => {
