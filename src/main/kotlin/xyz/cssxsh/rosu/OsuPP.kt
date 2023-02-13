@@ -2,7 +2,7 @@ package xyz.cssxsh.rosu
 
 import xyz.cssxsh.rosu.beatmap.Beatmap
 
-public class OsuPP internal constructor(@PublishedApi internal var ptr: Long, override val map: Beatmap) : AnyPP {
+public class OsuPP internal constructor(@PublishedApi internal val ptr: Long, override val map: Beatmap) : AnyPP {
     override val mode: GameMode = GameMode.Osu
 
     internal constructor(map: Beatmap) : this(ptr = create(map = map.ptr), map = map)

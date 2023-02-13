@@ -14,8 +14,8 @@ public class ManiaPP internal constructor(@PublishedApi internal val ptr: Long, 
     override fun toString(): String = debug(ptr = ptr, pretty = pretty())
 
     @ROsuPP
-    override fun calculate(): MainaPerformanceAttributes {
-        return MainaPerformanceAttributes(ptr = calculate(ptr = ptr))
+    override fun calculate(): ManiaPerformanceAttributes {
+        return ManiaPerformanceAttributes(ptr = calculate(ptr = ptr))
     }
 
     @ROsuPP

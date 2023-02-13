@@ -1,11 +1,11 @@
 package xyz.cssxsh.rosu
 
-public class MainaPerformanceAttributes internal constructor(@PublishedApi override val ptr: Long) :
+public class ManiaPerformanceAttributes @PublishedApi internal constructor(override val ptr: Long) :
     PerformanceAttributes(mode = GameMode.Mania) {
 
     protected fun finalize(): Unit = destroy(ptr = ptr)
 
-    override fun clone(): MainaPerformanceAttributes = MainaPerformanceAttributes(ptr = clone(ptr))
+    override fun clone(): ManiaPerformanceAttributes = ManiaPerformanceAttributes(ptr = clone(ptr = ptr))
 
     override fun toString(): String = debug(ptr = ptr, pretty = pretty())
 

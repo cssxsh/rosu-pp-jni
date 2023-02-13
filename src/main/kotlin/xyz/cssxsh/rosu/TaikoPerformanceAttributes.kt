@@ -1,11 +1,11 @@
 package xyz.cssxsh.rosu
 
-public class TaikoPerformanceAttributes internal constructor(@PublishedApi override val ptr: Long) :
+public class TaikoPerformanceAttributes @PublishedApi internal constructor(override val ptr: Long) :
     PerformanceAttributes(mode = GameMode.Taiko) {
 
     protected fun finalize(): Unit = destroy(ptr = ptr)
 
-    override fun clone(): TaikoPerformanceAttributes = TaikoPerformanceAttributes(ptr = clone(ptr))
+    override fun clone(): TaikoPerformanceAttributes = TaikoPerformanceAttributes(ptr = clone(ptr = ptr))
 
     override fun toString(): String = debug(ptr = ptr, pretty = pretty())
 

@@ -1,11 +1,11 @@
 package xyz.cssxsh.rosu
 
-public class CatchPerformanceAttributes internal constructor(@PublishedApi override val ptr: Long) :
+public class CatchPerformanceAttributes @PublishedApi internal constructor(override val ptr: Long) :
     PerformanceAttributes(mode = GameMode.Catch) {
 
     protected fun finalize(): Unit = destroy(ptr = ptr)
 
-    override fun clone(): CatchPerformanceAttributes = CatchPerformanceAttributes(ptr = clone(ptr))
+    override fun clone(): CatchPerformanceAttributes = CatchPerformanceAttributes(ptr = clone(ptr = ptr))
 
     override fun toString(): String = debug(ptr = ptr, pretty = pretty())
 

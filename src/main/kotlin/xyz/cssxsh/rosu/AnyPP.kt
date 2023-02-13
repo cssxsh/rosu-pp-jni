@@ -6,7 +6,7 @@ public sealed interface AnyPP : Cloneable {
 
     public val mode: GameMode
 
-    public val map: Beatmap get() = Beatmap()
+    public val map: Beatmap
 
     @ROsuPP
     public fun calculate(): PerformanceAttributes

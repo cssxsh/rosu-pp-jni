@@ -1,11 +1,11 @@
 package xyz.cssxsh.rosu
 
-public class OsuPerformanceAttributes internal constructor(@PublishedApi override val ptr: Long) :
+public class OsuPerformanceAttributes @PublishedApi internal constructor(override val ptr: Long) :
     PerformanceAttributes(mode = GameMode.Osu) {
 
     protected fun finalize(): Unit = destroy(ptr = ptr)
 
-    override fun clone(): OsuPerformanceAttributes = OsuPerformanceAttributes(ptr = clone(ptr))
+    override fun clone(): OsuPerformanceAttributes = OsuPerformanceAttributes(ptr = clone(ptr = ptr))
 
     override fun toString(): String = debug(ptr = ptr, pretty = pretty())
 
