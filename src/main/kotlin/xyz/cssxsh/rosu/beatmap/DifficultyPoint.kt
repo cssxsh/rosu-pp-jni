@@ -1,6 +1,7 @@
 package xyz.cssxsh.rosu.beatmap
 
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 public data class DifficultyPoint(
     public val time: Double,
@@ -11,7 +12,8 @@ public data class DifficultyPoint(
     public companion object Native {
         @JvmStatic
         @JvmName("fromByteBuffer")
-        internal operator fun invoke(buffer: ByteBuffer): DifficultyPoint {
+        internal operator fun invoke(buffer: ByteBuffer, order: ByteOrder = ByteOrder.LITTLE_ENDIAN): DifficultyPoint {
+            buffer.order(order)
             return DifficultyPoint(
                 time = buffer.double,
                 sliderVelocity = buffer.double,
@@ -22,7 +24,11 @@ public data class DifficultyPoint(
 
         @JvmStatic
         @JvmName("readByteBuffer")
-        internal fun sequence(buffer: ByteBuffer): Sequence<DifficultyPoint> = sequence {
+        internal fun sequence(
+            buffer: ByteBuffer,
+            order: ByteOrder = ByteOrder.LITTLE_ENDIAN
+        ): Sequence<DifficultyPoint> = sequence {
+            buffer.order(order)
             while (buffer.hasRemaining()) {
                 yield(invoke(buffer))
             }

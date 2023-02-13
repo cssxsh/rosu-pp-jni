@@ -1,6 +1,7 @@
 package xyz.cssxsh.rosu.beatmap
 
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 /**
  * @see Beatmap.breaks
@@ -23,7 +24,11 @@ public data class Break(
 
         @JvmStatic
         @JvmName("readByteBuffer")
-        internal fun sequence(buffer: ByteBuffer): Sequence<Break> = sequence {
+        internal fun sequence(
+            buffer: ByteBuffer,
+            order: ByteOrder = ByteOrder.LITTLE_ENDIAN
+        ): Sequence<Break> = sequence {
+            buffer.order(order)
             while (buffer.hasRemaining()) {
                 yield(invoke(buffer))
             }

@@ -111,19 +111,19 @@ public class Beatmap @PublishedApi internal constructor(internal val ptr: Native
      * [Timing](https://osu.ppy.sh/wiki/zh/Beatmapping/Timing) points that indicate a new timing section.
      */
     public val timingPoints: List<TimingPoint>
-        get() = TimingPoint.sequence(buffer = getTimingPoints(ptr = ptr).order(ByteOrder.LITTLE_ENDIAN)).toList()
+        get() = TimingPoint.sequence(buffer = getTimingPoints(ptr = ptr)).toList()
 
     /**
      * [Timing](https://osu.ppy.sh/wiki/zh/Beatmapping/Timing) point for the current timing section.
      */
     public val difficultyPoints: List<DifficultyPoint>
-        get() = DifficultyPoint.sequence(buffer = getDifficultyPoints(ptr = ptr).order(ByteOrder.LITTLE_ENDIAN)).toList()
+        get() = DifficultyPoint.sequence(buffer = getDifficultyPoints(ptr = ptr)).toList()
 
     /**
      * Control points for effect sections.
      */
     public val effectPoints: List<EffectPoint>
-        get() = EffectPoint.sequence(buffer = getEffectPoints(ptr = ptr).order(ByteOrder.LITTLE_ENDIAN)).toList()
+        get() = EffectPoint.sequence(buffer = getEffectPoints(ptr = ptr)).toList()
 
     /**
      * The stack leniency that is used to calculate the stack offset for stacked positions.
@@ -135,7 +135,7 @@ public class Beatmap @PublishedApi internal constructor(internal val ptr: Native
      * All break points of the beatmap.
      */
     public val breaks: List<Break>
-        get() = Break.sequence(buffer = getBreaks(ptr = ptr).order(ByteOrder.LITTLE_ENDIAN)).toList()
+        get() = Break.sequence(buffer = getBreaks(ptr = ptr)).toList()
 
     /**
      * [Beats per minute](https://osu.ppy.sh/wiki/zh/Beatmapping/Beats_per_minute)
@@ -153,7 +153,7 @@ public class Beatmap @PublishedApi internal constructor(internal val ptr: Native
      */
     @JvmName("getTimingPointAt")
     public fun timingPointAt(time: Double): TimingPoint {
-        return TimingPoint(getTimingPointAt(ptr = ptr, time = time).order(ByteOrder.LITTLE_ENDIAN))
+        return TimingPoint(buffer = getTimingPointAt(ptr = ptr, time = time))
     }
 
     /**
@@ -164,7 +164,7 @@ public class Beatmap @PublishedApi internal constructor(internal val ptr: Native
     @JvmName("getDifficultyPointAt")
     public fun difficultyPointAt(time: Double): DifficultyPoint? {
         val buffer = getDifficultyPointAt(ptr = ptr, time = time) ?: return null
-        return DifficultyPoint(buffer = buffer.order(ByteOrder.LITTLE_ENDIAN))
+        return DifficultyPoint(buffer = buffer)
     }
 
     /**
@@ -175,7 +175,7 @@ public class Beatmap @PublishedApi internal constructor(internal val ptr: Native
     @JvmName("getEffectPointAt")
     public fun effectPointAt(time: Double): EffectPoint? {
         val buffer = getEffectPointAt(ptr = ptr, time = time) ?: return null
-        return EffectPoint(buffer = buffer.order(ByteOrder.LITTLE_ENDIAN))
+        return EffectPoint(buffer = buffer)
     }
 
     /**
@@ -215,13 +215,13 @@ public class Beatmap @PublishedApi internal constructor(internal val ptr: Native
         internal external fun getVersion(ptr: NativePointer): Int
 
         @JvmStatic
-        internal external fun getNCircles(ptr: NativePointer): Long
+        internal external fun getNCircles(ptr: NativePointer): NativePointer
 
         @JvmStatic
-        internal external fun getNSliders(ptr: NativePointer): Long
+        internal external fun getNSliders(ptr: NativePointer): NativePointer
 
         @JvmStatic
-        internal external fun getNSpinners(ptr: NativePointer): Long
+        internal external fun getNSpinners(ptr: NativePointer): NativePointer
 
         @JvmStatic
         internal external fun getAR(ptr: NativePointer): Float
@@ -275,6 +275,6 @@ public class Beatmap @PublishedApi internal constructor(internal val ptr: Native
         internal external fun getEffectPointAt(ptr: NativePointer, time: Double): ByteBuffer?
 
         @JvmStatic
-        internal external fun convertMode(ptr: NativePointer, mode: Int): Long
+        internal external fun convertMode(ptr: NativePointer, mode: Int): NativePointer
     }
 }
