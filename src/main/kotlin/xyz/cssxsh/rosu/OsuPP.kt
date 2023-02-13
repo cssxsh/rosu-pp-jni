@@ -85,7 +85,7 @@ public class OsuPP internal constructor(@PublishedApi internal var ptr: Long, ov
     @ROsuPP
     override fun geki(number: Long): OsuPP = this
 
-    public companion object {
+    public companion object Native {
         init {
             Library.staticLoad()
         }

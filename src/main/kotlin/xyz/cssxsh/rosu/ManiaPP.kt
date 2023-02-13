@@ -76,7 +76,7 @@ public class ManiaPP internal constructor(@PublishedApi internal val ptr: Long, 
         withN320(ptr = ptr, number = number)
     }
 
-    public companion object {
+    public companion object Native {
         init {
             Library.staticLoad()
         }

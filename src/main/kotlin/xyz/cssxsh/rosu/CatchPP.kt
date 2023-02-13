@@ -83,7 +83,7 @@ public class CatchPP internal constructor(@PublishedApi internal var ptr: Long, 
     @ROsuPP
     override fun geki(number: Long): AnyPP = this
 
-    public companion object {
+    public companion object Native {
         init {
             Library.staticLoad()
         }

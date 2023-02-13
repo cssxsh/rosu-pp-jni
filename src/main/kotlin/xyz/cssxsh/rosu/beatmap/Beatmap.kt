@@ -184,7 +184,7 @@ public class Beatmap internal constructor(@PublishedApi internal val ptr: Long) 
         return Beatmap(ptr = convertMode(ptr = ptr, mode = mode.ordinal))
     }
 
-    public companion object {
+    public companion object Native {
         init {
             Library.staticLoad()
         }

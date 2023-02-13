@@ -6,7 +6,7 @@ public data class EffectPoint(
     public val time: Double,
     public val kiai: Boolean
 ) {
-    public companion object {
+    public companion object Native {
         @JvmStatic
         @JvmName("fromByteBuffer")
         internal operator fun invoke(buffer: ByteBuffer): EffectPoint {

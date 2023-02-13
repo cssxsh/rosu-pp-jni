@@ -47,7 +47,7 @@ public sealed interface AnyPP : Cloneable {
     @ROsuPP
     public fun geki(number: Long): AnyPP
 
-    public companion object {
+    public companion object Native {
         init {
             Library.staticLoad()
         }

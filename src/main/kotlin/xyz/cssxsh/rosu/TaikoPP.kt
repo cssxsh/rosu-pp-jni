@@ -77,7 +77,7 @@ public class TaikoPP internal constructor(@PublishedApi internal val ptr: Long, 
     @ROsuPP
     override fun geki(number: Long): AnyPP = this
 
-    public companion object {
+    public companion object Native {
         init {
             Library.staticLoad()
         }

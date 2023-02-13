@@ -11,7 +11,7 @@ public data class Break(
 ) {
     public fun duration(): Double = endTime - startTime
 
-    public companion object {
+    public companion object Native {
         @JvmStatic
         @JvmName("fromByteBuffer")
         internal operator fun invoke(buffer: ByteBuffer): Break {

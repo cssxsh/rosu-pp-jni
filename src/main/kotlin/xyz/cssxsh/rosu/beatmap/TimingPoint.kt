@@ -6,7 +6,7 @@ public data class TimingPoint(
     val beatLen: Double,
     val time: Double
 ) {
-    public companion object {
+    public companion object Native {
         @JvmStatic
         @JvmName("fromByteBuffer")
         internal operator fun invoke(buffer: ByteBuffer): TimingPoint {

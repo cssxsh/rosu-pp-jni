@@ -8,7 +8,7 @@ public data class DifficultyPoint(
     public val bpmMultiplier: Double,
     public val generateTicks: Boolean,
 ) {
-    public companion object {
+    public companion object Native {
         @JvmStatic
         @JvmName("fromByteBuffer")
         internal operator fun invoke(buffer: ByteBuffer): DifficultyPoint {
