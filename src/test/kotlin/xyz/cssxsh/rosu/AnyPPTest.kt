@@ -13,6 +13,8 @@ internal class AnyPPTest {
                 val attributes = pp.calculate()
                 assertEquals(expected, attributes.mode)
                 assertNotEquals(0, attributes.ptr)
+
+                assertEquals(attributes.maxCombo(), 909)
             }
             GameMode.Taiko -> {
                 assertIs<TaikoPP>(pp)
@@ -20,6 +22,8 @@ internal class AnyPPTest {
                 val attributes = pp.calculate()
                 assertEquals(expected, attributes.mode)
                 assertNotEquals(0, attributes.ptr)
+
+                assertEquals(attributes.maxCombo(), 289)
             }
             GameMode.Catch -> {
                 assertIs<CatchPP>(pp)
@@ -27,6 +31,8 @@ internal class AnyPPTest {
                 val attributes = pp.calculate()
                 assertEquals(expected, attributes.mode)
                 assertNotEquals(0, attributes.ptr)
+
+                assertEquals(attributes.maxCombo(), 730)
             }
             GameMode.Mania -> {
                 assertIs<ManiaPP>(pp)
@@ -34,6 +40,8 @@ internal class AnyPPTest {
                 val attributes = pp.calculate()
                 assertEquals(expected, attributes.mode)
                 assertNotEquals(0, attributes.ptr)
+
+                assertEquals(attributes.maxCombo(), 5064)
             }
         }
     }
