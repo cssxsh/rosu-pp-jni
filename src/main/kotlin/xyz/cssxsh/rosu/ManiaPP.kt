@@ -63,7 +63,7 @@ public class ManiaPP @PublishedApi internal constructor(internal val ptr: Native
     override fun combo(number: Long): ManiaPP = this
 
     @ROsuPP
-    public fun convert(value: Boolean): ManiaPP = apply {
+    override fun convert(value: Boolean): ManiaPP = apply {
         withIsConvert(ptr = ptr, value = value)
     }
 

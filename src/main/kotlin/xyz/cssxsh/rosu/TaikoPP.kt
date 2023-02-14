@@ -25,7 +25,7 @@ public class TaikoPP @PublishedApi internal constructor(internal val ptr: Native
     }
 
     @ROsuPP
-    public fun convert(value: Boolean): TaikoPP = apply {
+    override fun convert(value: Boolean): TaikoPP = apply {
         withIsConvert(ptr = ptr, value = value)
     }
 

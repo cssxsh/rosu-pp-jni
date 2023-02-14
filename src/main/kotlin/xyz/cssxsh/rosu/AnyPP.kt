@@ -53,6 +53,9 @@ public sealed interface AnyPP : Cloneable {
     @ROsuPP
     public fun geki(number: Long): AnyPP
 
+    @ROsuPP
+    public fun convert(value: Boolean): AnyPP = this
+
     public companion object Native {
         init {
             Library.staticLoad()
@@ -72,7 +75,7 @@ public sealed interface AnyPP : Cloneable {
         @JvmStatic
         @JvmName("map")
         public fun map(bytes: ByteArray): AnyPP {
-            val map = Beatmap(bytes)
+            val map = Beatmap(bytes = bytes)
             return when (map.mode) {
                 GameMode.Osu -> OsuPP(map = map)
                 GameMode.Taiko -> TaikoPP(map = map)
@@ -84,7 +87,7 @@ public sealed interface AnyPP : Cloneable {
         @JvmStatic
         @JvmName("map")
         public fun map(path: String): AnyPP {
-            val map = Beatmap(path)
+            val map = Beatmap(path = path)
             return when (map.mode) {
                 GameMode.Osu -> OsuPP(map = map)
                 GameMode.Taiko -> TaikoPP(map = map)
