@@ -20,6 +20,9 @@ public class TaikoStrains @PublishedApi internal constructor(override val ptr: N
     public val stamina: DoubleArray get() = getStamina(ptr = ptr)
 
     public companion object Native {
+        init {
+            Library.staticLoad()
+        }
 
         @JvmStatic
         internal external fun clone(ptr: NativePointer): NativePointer

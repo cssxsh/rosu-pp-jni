@@ -17,6 +17,9 @@ public class CatchStrains @PublishedApi internal constructor(override val ptr: L
     public val movement: DoubleArray get() = getMovement(ptr = ptr)
 
     public companion object Native {
+        init {
+            Library.staticLoad()
+        }
 
         @JvmStatic
         internal external fun clone(ptr: NativePointer): NativePointer

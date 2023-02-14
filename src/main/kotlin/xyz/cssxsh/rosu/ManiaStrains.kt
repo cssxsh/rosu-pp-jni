@@ -17,6 +17,9 @@ public class ManiaStrains @PublishedApi internal constructor(override val ptr: L
     public val strains: DoubleArray get() = getStrains(ptr = ptr)
 
     public companion object Native {
+        init {
+            Library.staticLoad()
+        }
 
         @JvmStatic
         internal external fun clone(ptr: NativePointer): NativePointer

@@ -20,6 +20,9 @@ public class OsuStrains @PublishedApi internal constructor(override val ptr: Nat
     public val flashlight: DoubleArray get() = getFlashlight(ptr = ptr)
 
     public companion object Native {
+        init {
+            Library.staticLoad()
+        }
 
         @JvmStatic
         internal external fun clone(ptr: NativePointer): NativePointer
