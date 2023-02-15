@@ -283,13 +283,13 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: push-release
-          path: build/lib/*
+          path: ~/.m2/repository/*
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: build/lib/*
+          files: build/libs/*
 
       - name: Publish
         if: startsWith(github.ref, 'refs/tags/')
