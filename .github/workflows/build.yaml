@@ -262,7 +262,7 @@ jobs:
 
       - name: Copy JNI
         shell: bash
-        run:
+        run: |
           mkdir src/main/resources
           cp ~/download/push-build-windows/* src/main/resources/
           cp ~/download/push-build-linux/* src/main/resources/
