@@ -120,7 +120,6 @@ jobs:
       - name: Build Jar
         shell: bash
         run: ./gradlew build --scan --info
-          
 
 
   android-build:
@@ -248,3 +247,42 @@ jobs:
         shell: bash
         run: ./gradlew build --scan --info
 
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [windows-build, linux-build, android-build, macos-build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download JNI
+        uses: actions/download-artifact@v3
+        with:
+          path: ~/download/
+
+      - name: Copy JNI
+        shell: bash
+        run:
+          cp ~/download/push-build-windows/* src/main/resources/
+          cp ~/download/push-build-linux/* src/main/resources/
+          cp ~/download/push-build-android/* src/main/resources/
+          cp ~/download/push-build-macos/* src/main/resources/
+
+      - name: chmod -R 777 *
+        run: chmod -R 777 *
+
+      - name: Build Jar
+        shell: bash
+        run: ./gradlew build --scan --info
+
+      - name: Build Jar
+        shell: bash
+        run: ./gradlew publish --scan --info
+        env:
+          PUBLICATION_CREDENTIALS: ${{ secrets.PUBLICATION_CREDENTIALS }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/lib/*
