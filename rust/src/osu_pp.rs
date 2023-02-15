@@ -257,3 +257,16 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withAccuracy_00024rosu_1pp_1jn
 ) {
     *pp = pp.clone().accuracy(value as _);
 }
+
+/*
+ * Class:     xyz_cssxsh_rosu_OsuPP
+ * Method:    withScoreState_00024rosu_pp_jni
+ * Signature: (JJ)V
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_OsuPP_withScoreState_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, pp: &'jvm mut OsuPP<'jvm>, state: &'jvm ScoreState,
+) {
+    let clone = state.clone();
+    *pp = pp.clone().state(clone.into());
+}

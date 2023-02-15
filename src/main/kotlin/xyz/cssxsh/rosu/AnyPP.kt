@@ -30,6 +30,9 @@ public sealed interface AnyPP : Cloneable {
     public fun clockRate(rate: Double): AnyPP
 
     @ROsuPP
+    public fun state(state: ScoreState): AnyPP
+
+    @ROsuPP
     public fun accuracy(value: Double): AnyPP
 
     @ROsuPP

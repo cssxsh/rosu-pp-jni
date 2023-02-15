@@ -61,6 +61,11 @@ public class OsuPP @PublishedApi internal constructor(internal val ptr: NativePo
     }
 
     @ROsuPP
+    override fun state(state: ScoreState): OsuPP = apply {
+        withScoreState(ptr = ptr, state = state.ptr)
+    }
+
+    @ROsuPP
     override fun accuracy(value: Double): OsuPP = apply {
         withAccuracy(ptr = ptr, value = value)
     }
@@ -154,5 +159,8 @@ public class OsuPP @PublishedApi internal constructor(internal val ptr: NativePo
 
         @JvmStatic
         internal external fun withDifficultyAttributes(ptr: NativePointer, value: NativePointer, mode: Int)
+
+        @JvmStatic
+        internal external fun withScoreState(ptr: NativePointer, state: NativePointer)
     }
 }

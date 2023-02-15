@@ -50,6 +50,11 @@ public class ManiaPP @PublishedApi internal constructor(internal val ptr: Native
     }
 
     @ROsuPP
+    override fun state(state: ScoreState): ManiaPP = apply {
+        withScoreState(ptr = ptr, state = state.ptr)
+    }
+
+    @ROsuPP
     override fun accuracy(value: Double): ManiaPP = apply {
         withAccuracy(ptr = ptr, value = value)
     }
@@ -153,5 +158,8 @@ public class ManiaPP @PublishedApi internal constructor(internal val ptr: Native
 
         @JvmStatic
         internal external fun withDifficultyAttributes(ptr: NativePointer, value: NativePointer, mode: Int)
+
+        @JvmStatic
+        internal external fun withScoreState(ptr: NativePointer, state: NativePointer)
     }
 }

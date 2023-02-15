@@ -259,3 +259,16 @@ pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withIsConvert_00024rosu_1pp_
 ) {
     *pp = pp.clone().is_convert(value != 0);
 }
+
+/*
+ * Class:     xyz_cssxsh_rosu_ManiaPP
+ * Method:    withScoreState_00024rosu_pp_jni
+ * Signature: (JJ)V
+ */
+#[no_mangle]
+pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaPP_withScoreState_00024rosu_1pp_1jni<'jvm>(
+    _env: JNIEnv<'jvm>, _this: jclass, pp: &'jvm mut ManiaPP<'jvm>, state: &'jvm ScoreState,
+) {
+    let clone = state.clone();
+    *pp = pp.clone().state(clone.into());
+}

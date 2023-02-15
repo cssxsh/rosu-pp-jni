@@ -55,6 +55,11 @@ public class TaikoPP @PublishedApi internal constructor(internal val ptr: Native
     }
 
     @ROsuPP
+    override fun state(state: ScoreState): TaikoPP = apply {
+        withScoreState(ptr = ptr, state = state.ptr)
+    }
+
+    @ROsuPP
     override fun accuracy(value: Double): TaikoPP = apply {
         withAccuracy(ptr = ptr, value = value)
     }
@@ -143,5 +148,8 @@ public class TaikoPP @PublishedApi internal constructor(internal val ptr: Native
 
         @JvmStatic
         internal external fun withDifficultyAttributes(ptr: NativePointer, value: NativePointer, mode: Int)
+
+        @JvmStatic
+        internal external fun withScoreState(ptr: NativePointer, state: NativePointer)
     }
 }
