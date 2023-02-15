@@ -1,6 +1,9 @@
 name: "build"
 on: [ push, pull_request ]
 
+permissions:
+  contents: write
+
 jobs:
   windows-build:
     runs-on: windows-latest
