@@ -263,6 +263,7 @@ jobs:
       - name: Copy JNI
         shell: bash
         run:
+          mkdir src/main/resources
           cp ~/download/push-build-windows/* src/main/resources/
           cp ~/download/push-build-linux/* src/main/resources/
           cp ~/download/push-build-android/* src/main/resources/
@@ -271,9 +272,11 @@ jobs:
       - name: chmod -R 777 *
         run: chmod -R 777 *
 
-      - name: Build Jar
+      - name: Sign Publication MavenCentral
         shell: bash
-        run: ./gradlew build --scan --info
+        run: ./gradlew signPublicationMavenCentral --scan --info
+        env:
+          PUBLICATION_CREDENTIALS: ${{ secrets.PUBLICATION_CREDENTIALS }}
 
       - name: Upload
         uses: actions/upload-artifact@v3
