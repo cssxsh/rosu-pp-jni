@@ -2,6 +2,9 @@ extern crate core;
 
 mod tool;
 mod beatmap;
+
+mod score_state;
+
 mod osu_pp;
 mod osu_performance_attributes;
 mod osu_difficulty_attributes;
