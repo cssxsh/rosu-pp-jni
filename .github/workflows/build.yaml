@@ -249,7 +249,6 @@ jobs:
 
 
   release:
-    if: startsWith(github.ref, 'refs/tags/')
     needs: [windows-build, linux-build, android-build, macos-build]
     runs-on: ubuntu-latest
     steps:
@@ -276,13 +275,21 @@ jobs:
         shell: bash
         run: ./gradlew build --scan --info
 
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: push-release
+          path: build/lib/*
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/lib/*
+
       - name: Build Jar
+        if: startsWith(github.ref, 'refs/tags/')
         shell: bash
         run: ./gradlew publish --scan --info
         env:
           PUBLICATION_CREDENTIALS: ${{ secrets.PUBLICATION_CREDENTIALS }}
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: build/lib/*
