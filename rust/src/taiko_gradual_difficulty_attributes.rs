@@ -12,9 +12,9 @@ use rosu_pp::taiko::*;
 pub extern "system" fn Java_xyz_cssxsh_rosu_TaikoGradualDifficultyAttributes_create_00024rosu_1pp_1jni<'jvm>(
     _env: JNIEnv<'jvm>, _this: jclass, map: &'jvm Beatmap, mods: jlong
 ) -> &'jvm mut TaikoGradualDifficultyAttributes {
-    let pp = TaikoGradualDifficultyAttributes::new(map, mods as _);
+    let gradual = TaikoGradualDifficultyAttributes::new(map, mods as _);
 
-    Box::leak(Box::new(pp))
+    Box::leak(Box::new(gradual))
 }
 
 /*

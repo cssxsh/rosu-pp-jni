@@ -12,9 +12,9 @@ use rosu_pp::osu::*;
 pub extern "system" fn Java_xyz_cssxsh_rosu_OsuGradualDifficultyAttributes_create_00024rosu_1pp_1jni<'jvm>(
     _env: JNIEnv<'jvm>, _this: jclass, map: &'jvm Beatmap, mods: jlong
 ) -> &'jvm mut OsuGradualDifficultyAttributes {
-    let pp = OsuGradualDifficultyAttributes::new(map, mods as _);
+    let gradual = OsuGradualDifficultyAttributes::new(map, mods as _);
 
-    Box::leak(Box::new(pp))
+    Box::leak(Box::new(gradual))
 }
 
 /*

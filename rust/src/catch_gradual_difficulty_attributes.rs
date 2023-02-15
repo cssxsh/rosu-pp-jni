@@ -12,9 +12,9 @@ use rosu_pp::catch::*;
 pub extern "system" fn Java_xyz_cssxsh_rosu_CatchGradualDifficultyAttributes_create_00024rosu_1pp_1jni<'jvm>(
     _env: JNIEnv<'jvm>, _this: jclass, map: &'jvm Beatmap, mods: jlong
 ) -> &'jvm mut CatchGradualDifficultyAttributes<'jvm> {
-    let pp = CatchGradualDifficultyAttributes::new(map, mods as _);
+    let gradual = CatchGradualDifficultyAttributes::new(map, mods as _);
 
-    Box::leak(Box::new(pp))
+    Box::leak(Box::new(gradual))
 }
 
 /*

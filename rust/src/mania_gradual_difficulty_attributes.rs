@@ -12,9 +12,9 @@ use rosu_pp::mania::*;
 pub extern "system" fn Java_xyz_cssxsh_rosu_ManiaGradualDifficultyAttributes_create_00024rosu_1pp_1jni<'jvm>(
     _env: JNIEnv<'jvm>, _this: jclass, map: &'jvm Beatmap, mods: jlong
 ) -> &'jvm mut ManiaGradualDifficultyAttributes<'jvm> {
-    let pp = ManiaGradualDifficultyAttributes::new(map, mods as _);
+    let gradual = ManiaGradualDifficultyAttributes::new(map, mods as _);
 
-    Box::leak(Box::new(pp))
+    Box::leak(Box::new(gradual))
 }
 
 /*
