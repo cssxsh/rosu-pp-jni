@@ -1,14 +1,15 @@
 name: "release"
-push:
-  tags:
-    - 'v*'
-  paths-ignore:
-    - '**/*.md'
-workflow_run:
-  workflows: ["build"]
-  branches: ["main"]
-  types:
-    - completed
+on:
+  push:
+    tags:
+      - 'v*'
+    paths-ignore:
+      - '**/*.md'
+  workflow_run:
+    workflows: ["build"]
+    branches: ["main"]
+    types:
+      - completed
 
 jobs:
   release:
