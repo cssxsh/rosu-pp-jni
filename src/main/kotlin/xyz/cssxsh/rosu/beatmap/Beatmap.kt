@@ -5,7 +5,6 @@ import xyz.cssxsh.rosu.Library
 import xyz.cssxsh.rosu.NativePointer
 import xyz.cssxsh.rosu.pretty
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 /**
  * [Beatmap](https://osu.ppy.sh/wiki/en/Beatmap) bind
@@ -42,7 +41,7 @@ public class Beatmap @PublishedApi internal constructor(internal val ptr: Native
         get() = GameMode.values()[getMode(ptr = ptr)]
 
     /**
-     * [Version](https://osu.ppy.sh/wiki/zh-tw/osu%21_File_Formats/Osu_%28file_format%29)
+     * [Version](https://osu.ppy.sh/wiki/en/osu%21_File_Formats/Osu_%28file_format%29)
      */
     public val version: Int
         get() = getVersion(ptr = ptr)
@@ -102,19 +101,25 @@ public class Beatmap @PublishedApi internal constructor(internal val ptr: Native
         get() = getTR(ptr = ptr)
 
     /**
+     * All hitobjects of the beatmap.
+     */
+    public val hitObjects: List<Any>
+        get() = TODO("Serialization is required, otherwise it is too complex")
+
+    /**
      * Store the sounds for all objects in their own Vec to minimize the struct size. Hit sounds are only used in osu!taiko in which they represent color.
      */
     public val sounds: ByteArray
-        get() = with(getSounds(ptr = ptr)) { if (hasArray()) array() else ByteArray(remaining()).also(::get) }
+        get() = getSounds(ptr = ptr).toByteArray()
 
     /**
-     * [Timing](https://osu.ppy.sh/wiki/zh/Beatmapping/Timing) points that indicate a new timing section.
+     * [Timing](https://osu.ppy.sh/wiki/en/Beatmapping/Timing) points that indicate a new timing section.
      */
     public val timingPoints: List<TimingPoint>
         get() = TimingPoint.sequence(buffer = getTimingPoints(ptr = ptr)).toList()
 
     /**
-     * [Timing](https://osu.ppy.sh/wiki/zh/Beatmapping/Timing) point for the current timing section.
+     * [Timing](https://osu.ppy.sh/wiki/en/Beatmapping/Timing) point for the current timing section.
      */
     public val difficultyPoints: List<DifficultyPoint>
         get() = DifficultyPoint.sequence(buffer = getDifficultyPoints(ptr = ptr)).toList()
@@ -138,7 +143,7 @@ public class Beatmap @PublishedApi internal constructor(internal val ptr: Native
         get() = Break.sequence(buffer = getBreaks(ptr = ptr)).toList()
 
     /**
-     * [Beats per minute](https://osu.ppy.sh/wiki/zh/Beatmapping/Beats_per_minute)
+     * [Beats per minute](https://osu.ppy.sh/wiki/en/Beatmapping/Beats_per_minute)
      */
     public fun bpm(): Double = bpm(ptr = ptr)
 

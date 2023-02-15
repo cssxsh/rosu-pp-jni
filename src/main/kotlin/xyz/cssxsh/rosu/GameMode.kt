@@ -13,11 +13,11 @@ public enum class GameMode {
      */
     Taiko,
     /**
-     * [osu!catch](https://osu.ppy.sh/wiki/zh/Ranking_Criteria/osu%21catch)
+     * [osu!catch](https://osu.ppy.sh/wiki/en/Ranking_Criteria/osu%21catch)
      */
     Catch,
     /**
-     * [osu!mania](https://osu.ppy.sh/wiki/zh/Ranking_Criteria/osu%21mania)
+     * [osu!mania](https://osu.ppy.sh/wiki/en/Ranking_Criteria/osu%21mania)
      */
     Mania,
 }

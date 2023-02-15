@@ -9,8 +9,6 @@ import java.util.concurrent.atomic.*
  */
 public object Library {
     @PublishedApi
-    internal const val ROSU_LIBRARY_PATH_PROPERTY: String = "rosu.library.path"
-    @PublishedApi
     internal var loaded: AtomicBoolean = AtomicBoolean(false)
     @PublishedApi
     internal val cacheRoot: String by lazy {

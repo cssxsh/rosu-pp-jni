@@ -1,6 +1,11 @@
 package xyz.cssxsh.rosu
 
-internal const val PRETTY_PRINT_KEY: String = "xyz.cssxsh.rosu.debug.pretty"
+
+@PublishedApi
+internal const val ROSU_LIBRARY_PATH_PROPERTY: String = "rosu.library.path"
+
+@PublishedApi
+internal const val PRETTY_PRINT_KEY: String = "rosu.debug.pretty"
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun pretty(): Boolean {

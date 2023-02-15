@@ -2,10 +2,20 @@ import java.io.ByteArrayOutputStream
 
 plugins {
     kotlin("jvm") version "1.7.22"
+
+    id("me.him188.maven-central-publish") version "1.0.0-dev-3"
 }
 
 group = "xyz.cssxsh.osu"
 version = "0.0.1"
+
+mavenCentralPublish {
+    useCentralS01()
+    singleDevGithubProject("cssxsh", "rosu-pp-jni")
+    licenseFromGitHubProject("AGPL-3.0")
+    workingDir = System.getenv("PUBLICATION_TEMP")?.let { file(it).resolve(projectName) }
+        ?: buildDir.resolve("publishing-tmp")
+}
 
 repositories {
     mavenCentral()

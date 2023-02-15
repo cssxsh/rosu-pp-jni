@@ -3,7 +3,6 @@ package xyz.cssxsh.rosu
 import xyz.cssxsh.rosu.beatmap.Beatmap
 import kotlin.test.*
 
-
 internal class GradualDifficultyAttributesTest {
     @Test
     fun create() {
