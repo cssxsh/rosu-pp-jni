@@ -104,8 +104,8 @@ public class Beatmap @PublishedApi internal constructor(internal val ptr: Native
     /**
      * Store the sounds for all objects in their own Vec to minimize the struct size. Hit sounds are only used in osu!taiko in which they represent color.
      */
-    public val sounds: ByteBuffer
-        get() = getSounds(ptr = ptr).order(ByteOrder.LITTLE_ENDIAN)
+    public val sounds: ByteArray
+        get() = with(getSounds(ptr = ptr)) { if (hasArray()) array() else ByteArray(remaining()).also(::get) }
 
     /**
      * [Timing](https://osu.ppy.sh/wiki/zh/Beatmapping/Timing) points that indicate a new timing section.
