@@ -251,6 +251,7 @@ jobs:
   release:
     needs: [windows-build, linux-build, android-build, macos-build]
     runs-on: ubuntu-latest
+    environment: PUBLICATION_CREDENTIALS
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -272,9 +273,9 @@ jobs:
       - name: chmod -R 777 *
         run: chmod -R 777 *
 
-      - name: Sign Publication MavenCentral
+      - name: Publish To MavenLocal
         shell: bash
-        run: ./gradlew signPublicationMavenCentral --scan --info
+        run: ./gradlew publishToMavenLocal --scan --info
         env:
           PUBLICATION_CREDENTIALS: ${{ secrets.PUBLICATION_CREDENTIALS }}
 
@@ -290,7 +291,7 @@ jobs:
         with:
           files: build/lib/*
 
-      - name: Build Jar
+      - name: Publish
         if: startsWith(github.ref, 'refs/tags/')
         shell: bash
         run: ./gradlew publish --scan --info
