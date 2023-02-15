@@ -1,5 +1,11 @@
 name: "build"
-on: [ push, pull_request ]
+on:
+  push:
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
 
 permissions:
   contents: write
@@ -293,6 +299,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: build/libs/*
+          generate_release_notes: true
 
       - name: Publish
         if: startsWith(github.ref, 'refs/tags/')
